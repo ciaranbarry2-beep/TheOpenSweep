@@ -133,7 +133,7 @@ const BUCKETS = [
 const AMATEURS = new Set(["Jackson Koivun","Mason Howell","Miles Russell","Ethan Fang","Preston Stout"]);
 const amLabel = (p) => AMATEURS.has(p) ? p + " (a)" : p;
 
-const SCORE_OPTIONS = Array.from({ length: 31 }, (_, i) => i - 20);
+const SCORE_OPTIONS = Array.from({ length: 31 }, (_, i) => i - 25);
 
 const PRIZES = [
   { pos:1, icon:"🥇", label:"1st Place", color:C.gold,   prize:"35% of pot" },
@@ -710,12 +710,12 @@ function EnterPicks({ entries, setEntries, scores }) {
         )}
 
         <div style={{ marginBottom:12 }}>
-          <div style={{ color:"#cda349", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>🏆 Team Name *</div>
+          <div style={{ color:"#8f1d2e", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>🏆 Team Name *</div>
           <input value={currentTeamName} onChange={e=>setCurrentTeamName(e.target.value)} placeholder={`e.g. "The Lucky Shamrocks"`}
-            style={{ width:"100%", padding:"11px 13px", borderRadius:8, border:"2px solid #cda349",
-              background:"#1f1808", color:C.white, fontSize:14, boxSizing:"border-box",
-              fontFamily:"inherit", outline:"none", boxShadow:"0 0 10px #cda34933" }} />
-          <div style={{ color:"#9a8255", fontSize:11, marginTop:4 }}>This name appears on the leaderboard — make it count!</div>
+            style={{ width:"100%", padding:"11px 13px", borderRadius:8, border:`2px solid ${C.gold}`,
+              background:C.blackCard, color:C.white, fontSize:14, boxSizing:"border-box",
+              fontFamily:"inherit", outline:"none", boxShadow:`0 0 8px ${C.gold}33` }} />
+          <div style={{ color:C.muted, fontSize:11, marginTop:4 }}>This name appears on the leaderboard — make it count!</div>
         </div>
 
         <BucketSelector picks={currentPicks} onPick={(bid, p) => setCurrentPicks(prev=>({...prev,[bid]:p}))} />
