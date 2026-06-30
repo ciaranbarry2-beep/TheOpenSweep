@@ -6,13 +6,13 @@
   <title>The Open Sweep 2026 · Swords Celtic</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0d0b0a; font-family: Georgia, serif; color: #f4ead6; }
+    body { background: #f5efe2; font-family: Georgia, serif; color: #241c12; }
     input, button, select, textarea { font-family: Georgia, serif; }
     #loading { padding:60px; text-align:center; color:#8f1d2e; font-size:16px; }
   </style>
 </head>
 <body>
-  <div id="root"><div id="loading">⛳ Loading The Open Sweep 2026...<br><br><small style="color:#555">Please wait — loading resources</small></div></div>
+  <div id="root"><div id="loading">⛳ Loading The Open Sweep 2026...<br><br><small style="color:#8a7f68">Please wait — loading resources</small></div></div>
 
   <script>
   // Load scripts sequentially to avoid race conditions
@@ -41,7 +41,7 @@
           var root = ReactDOM.createRoot(document.getElementById('root'));
           root.render(React.createElement(App));
         } catch(err) {
-          document.getElementById('root').innerHTML = '<div style="padding:40px;color:#f87171;font-family:monospace;white-space:pre-wrap;">Error: ' + err.message + '</div>';
+          document.getElementById('root').innerHTML = '<div style="padding:40px;color:#a32d2d;font-family:monospace;white-space:pre-wrap;">Error: ' + err.message + '</div>';
         }
       });
     });
@@ -73,34 +73,34 @@ const C = {
   // ── HERO = The Open claret (keys kept as "green*" so all existing references repoint automatically) ──
   green:      "#8f1d2e",   // claret — primary accent / buttons / active tabs
   greenDark:  "#6e1423",   // claret deep — pressed / darker fills
-  greenDeep:  "#4a0d18",   // claret deepest — banners / panels
-  greenLight: "#c77785",   // claret light — highlights / secondary text on claret
-  greenGlow:  "#8f1d2e33", // claret glow (low-alpha)
-  // ── BASE = links basalt (warmed toward sand/peat) ──
-  black:      "#0d0b0a",
-  blackMid:   "#141110",
-  blackCard:  "#1a1714",
-  blackLight: "#2a2419",
-  border:     "#3a342c",
-  borderGreen:"#8f1d2e55", // claret-tinted border
-  muted:      "#6b6354",
-  mutedLight: "#9a8f7d",
-  white:      "#ffffff",
-  offWhite:   "#f4ead6",   // parchment — warm headings / body
+  greenDeep:  "#fbe9ec",   // claret tint — light banner/panel backgrounds (was deepest claret)
+  greenLight: "#6e1423",   // claret deep — text/highlights that sit ON light claret tints
+  greenGlow:  "#8f1d2e22", // claret glow (low-alpha)
+  // ── BASE = soft warm off-white / sand (LIGHT) ──
+  black:      "#f5efe2",   // page background — warm sand cream (was near-black)
+  blackMid:   "#efe7d6",   // slightly deeper sand — section bands
+  blackCard:  "#fffdf8",   // card surface — near-white warm
+  blackLight: "#e8dfca",   // raised/alt surface — sand
+  border:     "#d8cdb3",   // sand border / divider
+  borderGreen:"#8f1d2e44", // claret-tinted border
+  muted:      "#8a7f68",   // muted text on cream
+  mutedLight: "#a89b80",   // lighter muted text
+  white:      "#241c12",   // PRIMARY TEXT — dark espresso ink (was #ffffff)
+  offWhite:   "#3a2f20",   // body / heading text — warm dark brown (was parchment)
   // ── Swords Celtic accent (the 20%) — real emerald, now used for success/live/good scores ──
-  amber:      "#119647",   // (repurposed) Celtic green — confirmations / success
-  amberLight: "#3dc978",   // (repurposed) Celtic green light — live / under-par scores
-  celtic:     "#119647",   // explicit alias for clarity
-  celticLight:"#3dc978",
-  celticDark: "#0a6b30",
+  amber:      "#0a6b30",   // (repurposed) Celtic green (darkened for contrast on light) — success
+  amberLight: "#0a6b30",   // (repurposed) Celtic green — live / under-par scores
+  celtic:     "#0a6b30",   // explicit alias (darker green reads on cream)
+  celticLight:"#119647",
+  celticDark: "#074d22",
   // ── Podium ──
-  gold:       "#cda349",   // warm Claret Jug gold — 1st place
-  silver:     "#C0C0C0",
-  bronze:     "#CD7F32",
+  gold:       "#b8902f",   // warm Claret Jug gold (darkened for light bg) — 1st place
+  silver:     "#9a9a9a",
+  bronze:     "#a9712f",
   // ── Payment panel = claret (recoloured from purple) ──
   purple:     "#8f1d2e",   // (repurposed) claret — payment accents
-  purpleLight:"#c77785",   // (repurposed) claret light
-  red:        "#dc2626",
+  purpleLight:"#6e1423",   // (repurposed) claret deep — text on light claret
+  red:        "#c0292b",
 };
 
 // ─── 100 PLAYERS IN 10 BUCKETS OF 10 ─────────────────────────────────────────
@@ -285,7 +285,7 @@ function deadlineCountdown() {
 
 // ─── UI ATOMS ─────────────────────────────────────────────────────────────────
 function ScoreBadge({ score }) {
-  const col = score < -5 ? "#4ade80" : score < 0 ? "#86efac" : score === 0 ? C.muted : score < 5 ? C.amber : C.red;
+  const col = score < -5 ? "#0a6b30" : score < 0 ? "#2e8b4f" : score === 0 ? C.muted : score < 5 ? "#b8902f" : C.red;
   return <span style={{ fontFamily:"monospace", fontWeight:700, fontSize:13, color:col, minWidth:36, display:"inline-block", textAlign:"right" }}>{fmt(score)}</span>;
 }
 function GreenPill({ children }) {
@@ -312,9 +312,9 @@ function DeadlineBanner() {
   }, []);
   const past = !cd;
   return (
-    <div style={{ background: past ? "#3f0000" : C.greenDeep, border:`1px solid ${past?"#dc2626":C.green}`, borderRadius:8, padding:"8px 12px", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
+    <div style={{ background: past ? "#fbe2e2" : C.greenDeep, border:`1px solid ${past?"#c0292b":C.green}`, borderRadius:8, padding:"8px 12px", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
       <div>
-        <span style={{ fontSize:13, color:past?"#f87171":C.white, fontWeight:700 }}>
+        <span style={{ fontSize:13, color:past?"#a32d2d":C.white, fontWeight:700 }}>
           {past ? "⛔ Entries Closed" : "⏰ Deadline: 11am Dublin Time, Thu 18 June 2026"}
         </span>
         {!past && <div style={{ color:C.greenLight, fontSize:11, marginTop:1 }}>Last entries & payment accepted by 11am</div>}
@@ -397,7 +397,7 @@ function TiebreakerInput({ value, onChange }) {
               padding:"5px 8px", borderRadius:6,
               border:value===s?`1px solid ${C.green}`:`1px solid ${C.border}`,
               background:value===s?C.greenDark:C.black,
-              color:value===s?C.white:s<0?"#4ade80":s===0?C.muted:"#f87171",
+              color:value===s?"#fff5ee":s<0?"#0a6b30":s===0?C.muted:"#a32d2d",
               cursor:"pointer", fontSize:12, fontWeight:value===s?700:400,
               fontFamily:"monospace", minWidth:34, textAlign:"center", transition:"all 0.1s",
             }}>{fmt(s)}</button>
@@ -468,39 +468,39 @@ function RevolutPayCard({ name, totalEntries }) {
   const amount   = isBundle ? PRICE_BUNDLE : totalEntries * PRICE_SINGLE;
   const ref      = `TheOpen2026-${name.replace(/\s+/g,"")}`;
   return (
-    <div style={{ background:"linear-gradient(135deg,#2a0a10,#1a0708)", border:`1px solid ${C.purple}55`, borderRadius:12, padding:16 }}>
+    <div style={{ background:"linear-gradient(135deg,#fdeef0,#fbe4e8)", border:`1px solid ${C.purple}44`, borderRadius:12, padding:16 }}>
       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
         <span style={{ fontSize:20 }}>🏆</span>
-        <span style={{ color:C.purpleLight, fontWeight:700, fontSize:15 }}>Pay via Revolut</span>
+        <span style={{ color:"#8f1d2e", fontWeight:700, fontSize:15 }}>Pay via Revolut</span>
       </div>
-      <div style={{ background:"#1a0708", borderRadius:8, padding:12, marginBottom:12 }}>
+      <div style={{ background:"#fffdf8", borderRadius:8, padding:12, marginBottom:12 }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-          <span style={{ color:"#c77785", fontSize:12 }}>{totalEntries} × entry</span>
+          <span style={{ color:"#8a7f68", fontSize:12 }}>{totalEntries} × entry</span>
           <span style={{ color:C.offWhite, fontSize:12 }}>€{totalEntries*PRICE_SINGLE}</span>
         </div>
         {isBundle && (
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-            <span style={{ color:"#c77785", fontSize:12 }}>3-entry bundle discount</span>
-            <span style={{ color:"#4ade80", fontSize:12 }}>–€{PRICE_SINGLE*3-PRICE_BUNDLE}</span>
+            <span style={{ color:"#8a7f68", fontSize:12 }}>3-entry bundle discount</span>
+            <span style={{ color:"#0a6b30", fontSize:12 }}>–€{PRICE_SINGLE*3-PRICE_BUNDLE}</span>
           </div>
         )}
-        <div style={{ display:"flex", justifyContent:"space-between", borderTop:"1px solid #4a0d18", paddingTop:8, marginTop:4 }}>
-          <span style={{ color:C.purpleLight, fontWeight:700, fontSize:14 }}>Total due</span>
-          <span style={{ color:C.amber, fontWeight:800, fontSize:20 }}>€{amount}</span>
+        <div style={{ display:"flex", justifyContent:"space-between", borderTop:"1px solid #f0d0d6", paddingTop:8, marginTop:4 }}>
+          <span style={{ color:"#6e1423", fontWeight:700, fontSize:14 }}>Total due</span>
+          <span style={{ color:"#8f1d2e", fontWeight:800, fontSize:20 }}>€{amount}</span>
         </div>
       </div>
-      <div style={{ background:"#2a0a10", borderRadius:6, padding:"8px 10px", marginBottom:12, fontSize:11 }}>
-        <span style={{ color:"#c77785" }}>Reference: </span>
+      <div style={{ background:"#f7e3e6", borderRadius:6, padding:"8px 10px", marginBottom:12, fontSize:11 }}>
+        <span style={{ color:"#8a7f68" }}>Reference: </span>
         <strong style={{ color:C.purpleLight }}>{ref}</strong>
-        <div style={{ color:"#9a6e74", fontSize:10, marginTop:2 }}>Include this so we can match your payment ✓</div>
+        <div style={{ color:"#a8736f", fontSize:10, marginTop:2 }}>Include this so we can match your payment ✓</div>
       </div>
       <div style={{ textAlign:"center", marginBottom:12 }}>
-        <div style={{ color:"#c77785", fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:8 }}>Scan to Pay</div>
+        <div style={{ color:"#8f1d2e", fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:8 }}>Scan to Pay</div>
         <img src="photos/revolut-qr.jpg" alt="Revolut QR Code" style={{ width:180, height:180, borderRadius:12, display:"block", margin:"0 auto", border:"2px solid #8f1d2e44" }} />
-        <div style={{ color:"#9a6e74", fontSize:10, marginTop:6 }}>Point your phone camera at the QR code to pay instantly</div>
+        <div style={{ color:"#a8736f", fontSize:10, marginTop:6 }}>Point your phone camera at the QR code to pay instantly</div>
       </div>
       <a href={`https://revolut.me/${REVOLUT_ME}`} target="_blank" rel="noopener noreferrer"
-        style={{ display:"block", textAlign:"center", background:"linear-gradient(135deg,#8f1d2e,#6e1423)", color:C.white, borderRadius:8, padding:"12px 0", fontWeight:700, fontSize:14, textDecoration:"none" }}>
+        style={{ display:"block", textAlign:"center", background:"linear-gradient(135deg,#8f1d2e,#6e1423)", color:"#fff5ee", borderRadius:8, padding:"12px 0", fontWeight:700, fontSize:14, textDecoration:"none" }}>
         Open Revolut → @{REVOLUT_ME}
       </a>
     </div>
@@ -632,7 +632,7 @@ function EnterPicks({ entries, setEntries, scores }) {
               </button>
             ))}
           </div>
-          {numTeams===3 && <div style={{ color:"#4ade80", fontSize:11, marginBottom:14 }}>🎉 3-entry bundle — only €{PRICE_BUNDLE} total!</div>}
+          {numTeams===3 && <div style={{ color:"#0a6b30", fontSize:11, marginBottom:14 }}>🎉 3-entry bundle — only €{PRICE_BUNDLE} total!</div>}
 
           {/* Pay Now option */}
           <div style={{ borderTop:`1px solid ${C.border}`, marginTop:16, paddingTop:16 }}>
@@ -654,7 +654,7 @@ function EnterPicks({ entries, setEntries, scores }) {
             )}
           </div>
 
-          {error && <div style={{ color:"#f87171", fontSize:13, margin:"8px 0" }}>{error}</div>}
+          {error && <div style={{ color:"#a32d2d", fontSize:13, margin:"8px 0" }}>{error}</div>}
           <button onClick={startFilling} style={{
             width:"100%", marginTop:14, background:C.green, color:C.white,
             border:"none", borderRadius:8, padding:"13px 0", fontSize:15,
@@ -689,7 +689,7 @@ function EnterPicks({ entries, setEntries, scores }) {
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <button onClick={quickPick} style={{
-              background:`linear-gradient(135deg, ${C.greenDark}, #1a4a1a)`,
+              background:`linear-gradient(135deg, ${C.green}, ${C.greenDark})`,
               border:`1px solid ${C.green}`,
               color:C.white, borderRadius:8, padding:"7px 12px",
               fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit",
@@ -723,7 +723,7 @@ function EnterPicks({ entries, setEntries, scores }) {
           <TiebreakerInput value={tiebreaker} onChange={setTiebreaker} />
         </div>
 
-        {error && <div style={{ color:"#f87171", fontSize:13, margin:"10px 0", textAlign:"center" }}>{error}</div>}
+        {error && <div style={{ color:"#a32d2d", fontSize:13, margin:"10px 0", textAlign:"center" }}>{error}</div>}
         <div style={{ textAlign:"center", marginTop:16 }}>
           <button onClick={submitTeam} style={{
             background:ready?C.green:C.border, color:ready?C.white:C.muted,
@@ -764,7 +764,7 @@ function EnterPicks({ entries, setEntries, scores }) {
                 </div>
                 <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                   <span style={{ color:C.muted, fontSize:11 }}>Best 5:</span>
-                  <span style={{ fontFamily:"monospace", fontWeight:800, fontSize:16, color:total<0?"#4ade80":total===0?C.muted:"#f87171" }}>{fmt(total)}</span>
+                  <span style={{ fontFamily:"monospace", fontWeight:800, fontSize:16, color:total<0?"#0a6b30":total===0?C.muted:"#a32d2d" }}>{fmt(total)}</span>
                 </div>
               </div>
               {t.picks.map((p,i) => (
@@ -886,7 +886,7 @@ function Leaderboard({ entries, scores }) {
                 </div>
                 <div style={{ display:"flex", alignItems:"center", gap:5 }}>
                   <span style={{ color:C.muted, fontSize:10 }}>Best 5:</span>
-                  <span style={{ fontFamily:"monospace", fontWeight:800, fontSize:16, color:e.total<0?"#4ade80":e.total===0?C.muted:"#f87171" }}>{fmt(e.total)}</span>
+                  <span style={{ fontFamily:"monospace", fontWeight:800, fontSize:16, color:e.total<0?"#0a6b30":e.total===0?C.muted:"#a32d2d" }}>{fmt(e.total)}</span>
                 </div>
               </div>
               <div style={{ display:"flex", flexWrap:"wrap", gap:3 }}>
@@ -1139,7 +1139,7 @@ function Admin({ entries, setEntries }) {
         <h2 style={{ color:C.white, margin:0, fontSize:18 }}>⚙ Admin Panel</h2>
         <div style={{ display:"flex", gap:8 }}>
           {entries.length>0 && <button onClick={downloadCSV} style={{ background:C.greenDark, color:C.white, border:`1px solid ${C.green}`, borderRadius:6, padding:"6px 12px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>⬇ Download CSV</button>}
-          {entries.length>0 && <button onClick={clear} style={{ background:"#7f1d1d", color:"#fca5a5", border:"none", borderRadius:6, padding:"6px 12px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Clear All</button>}
+          {entries.length>0 && <button onClick={clear} style={{ background:"#fbe2e2", color:"#a32d2d", border:"none", borderRadius:6, padding:"6px 12px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Clear All</button>}
         </div>
       </div>
 
@@ -1212,7 +1212,7 @@ function AdminLogin({ onSuccess }) {
       <h3 style={{ color:C.white, marginBottom:16 }}>Admin Access</h3>
       <input type="password" value={pin} onChange={e=>{setPin(e.target.value);setErr(false);}} onKeyDown={e=>e.key==="Enter"&&attempt()} placeholder="Enter PIN"
         style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:err?`1px solid ${C.red}`:`1px solid ${C.border}`, background:C.blackCard, color:C.white, fontSize:16, boxSizing:"border-box", fontFamily:"inherit", textAlign:"center", letterSpacing:"0.2em", outline:"none", marginBottom:8 }} />
-      {err && <div style={{ color:"#f87171", fontSize:12, marginBottom:8 }}>Incorrect PIN</div>}
+      {err && <div style={{ color:"#a32d2d", fontSize:12, marginBottom:8 }}>Incorrect PIN</div>}
       <button onClick={attempt} style={{ background:C.green, color:C.white, border:"none", borderRadius:8, padding:"10px 24px", fontWeight:700, cursor:"pointer", fontFamily:"inherit", width:"100%" }}>Unlock</button>
     </div>
   );
@@ -1267,7 +1267,7 @@ function App() {
   return (
     <div style={{ minHeight:"100vh", background:C.black, fontFamily:"'Georgia', serif", color:C.offWhite }}>
       {/* ── HEADER ── */}
-      <header style={{ background:`linear-gradient(135deg, ${C.black} 0%, #0d1f12 100%)`, borderBottom:`2px solid ${C.green}`, padding:"16px 16px 12px" }}>
+      <header style={{ background:`linear-gradient(135deg, #fffdf8 0%, #f0e3d0 100%)`, borderBottom:`2px solid ${C.green}`, padding:"16px 16px 12px" }}>
         <div style={{ maxWidth:640, margin:"0 auto" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
             <div style={{ display:"flex", alignItems:"center", gap:14 }}>
