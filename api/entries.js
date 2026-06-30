@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   try {
     // GET — load all entries
     if (req.method === "GET") {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/entries?select=*&order=submitted_at.asc`, {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/the_open_picks?select=*&order=submitted_at.asc`, {
         headers: SB_HEADERS,
       });
       const data = await r.json();
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     // POST — save a new entry
     if (req.method === "POST") {
       const body = req.body;
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/entries`, {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/the_open_picks`, {
         method: "POST",
         headers: SB_HEADERS,
         body: JSON.stringify(body),
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     if (req.method === "DELETE") {
       const { id, all } = req.query;
       const filter = all ? "id=gte.0" : `id=eq.${id}`;
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/entries?${filter}`, {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/the_open_picks?${filter}`, {
         method: "DELETE",
         headers: SB_HEADERS,
       });
@@ -63,6 +63,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: error.message });
   }
 }
-
-
-
