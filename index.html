@@ -518,6 +518,7 @@ function EnterPicks({ entries, setEntries, scores }) {
   const [teams, setTeams] = useState([]); // completed team submissions
   const [currentPicks, setCurrentPicks] = useState({});
   const [currentTeamName, setCurrentTeamName] = useState("");
+  const [justSubmitted, setJustSubmitted] = useState(null); // holds the entry number just submitted, for the confirmation banner
   const [tiebreaker, setTiebreaker] = useState(null);
   const [payMethod, setPayMethod] = useState(null);
   const [error, setError] = useState("");
@@ -581,10 +582,16 @@ function EnterPicks({ entries, setEntries, scores }) {
 
     if (updatedTeams.length < numTeams) {
       // Loop back for next team
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const submittedNum = updatedTeams.length; // entry number just completed
       setCurrentPicks({});
       setCurrentTeamName("");
       setTiebreaker(null);
+      setJustSubmitted(submittedNum);
+      // Instant jump to top (reliable on mobile, unlike smooth which gets interrupted by the re-render)
+      window.scrollTo(0, 0);
+      // Re-assert after the re-render paints, then clear the banner a few seconds later
+      setTimeout(() => window.scrollTo(0, 0), 50);
+      setTimeout(() => setJustSubmitted(null), 6000);
     } else {
       // All teams done — reload from Supabase and go to confirmation
       const fresh = await loadEntries();
@@ -672,6 +679,17 @@ function EnterPicks({ entries, setEntries, scores }) {
     const teamNum = teamIndex + 1;
     return (
       <div style={{ padding:16, maxWidth:640, margin:"0 auto" }}>
+        {/* Confirmation banner — shows after a team is submitted in a multi-entry flow */}
+        {justSubmitted && (
+          <div style={{
+            background:C.celtic, color:"#fff5ee", borderRadius:10, padding:"12px 16px",
+            marginBottom:14, fontSize:14, fontWeight:700, display:"flex", alignItems:"center", gap:8,
+            boxShadow:`0 2px 10px ${C.celtic}55`,
+          }}>
+            ✅ Entry {justSubmitted} submitted! Now picking Entry {justSubmitted + 1} of {numTeams} — start from the top.
+          </div>
+        )}
+
         {/* Progress indicator */}
         {numTeams > 1 && (
           <div style={{ display:"flex", gap:6, marginBottom:14 }}>
