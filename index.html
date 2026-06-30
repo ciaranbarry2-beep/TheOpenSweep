@@ -6,13 +6,13 @@
   <title>The Open Sweep 2026 · Swords Celtic</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #f5efe2; font-family: Georgia, serif; color: #241c12; }
+    body { background: #f5efe2; font-family: Georgia, serif; color: #1a130a; }
     input, button, select, textarea { font-family: Georgia, serif; }
     #loading { padding:60px; text-align:center; color:#8f1d2e; font-size:16px; }
   </style>
 </head>
 <body>
-  <div id="root"><div id="loading">⛳ Loading The Open Sweep 2026...<br><br><small style="color:#8a7f68">Please wait — loading resources</small></div></div>
+  <div id="root"><div id="loading">⛳ Loading The Open Sweep 2026...<br><br><small style="color:#6e6450">Please wait — loading resources</small></div></div>
 
   <script>
   // Load scripts sequentially to avoid race conditions
@@ -83,10 +83,11 @@ const C = {
   blackLight: "#e8dfca",   // raised/alt surface — sand
   border:     "#d8cdb3",   // sand border / divider
   borderGreen:"#8f1d2e44", // claret-tinted border
-  muted:      "#8a7f68",   // muted text on cream
-  mutedLight: "#a89b80",   // lighter muted text
-  white:      "#241c12",   // PRIMARY TEXT — dark espresso ink (was #ffffff)
-  offWhite:   "#3a2f20",   // body / heading text — warm dark brown (was parchment)
+  muted:      "#6e6450",   // muted text on cream (darkened)
+  mutedLight: "#8a7c62",   // lighter muted text (darkened)
+  white:      "#1a130a",   // PRIMARY TEXT — near-black espresso ink (darkened)
+  onClaret:   "#fff5ee",   // light cream text for use ON claret/green fills
+  offWhite:   "#2a2114",   // body / heading text — dark brown (darkened)
   // ── Swords Celtic accent (the 20%) — real emerald, now used for success/live/good scores ──
   amber:      "#0a6b30",   // (repurposed) Celtic green (darkened for contrast on light) — success
   amberLight: "#0a6b30",   // (repurposed) Celtic green — live / under-par scores
@@ -289,7 +290,7 @@ function ScoreBadge({ score }) {
   return <span style={{ fontFamily:"monospace", fontWeight:700, fontSize:13, color:col, minWidth:36, display:"inline-block", textAlign:"right" }}>{fmt(score)}</span>;
 }
 function GreenPill({ children }) {
-  return <span style={{ background:C.green, color:C.white, borderRadius:99, padding:"2px 10px", fontSize:11, fontWeight:700, letterSpacing:"0.05em", textTransform:"uppercase" }}>{children}</span>;
+  return <span style={{ background:C.green, color:C.onClaret, borderRadius:99, padding:"2px 10px", fontSize:11, fontWeight:700, letterSpacing:"0.05em", textTransform:"uppercase" }}>{children}</span>;
 }
 function Lbl({ children }) {
   return <div style={{ color:C.mutedLight, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>{children}</div>;
@@ -319,7 +320,7 @@ function DeadlineBanner() {
         </span>
         {!past && <div style={{ color:C.greenLight, fontSize:11, marginTop:1 }}>Last entries & payment accepted by 11am</div>}
       </div>
-      {cd && <span style={{ background:C.green, color:C.white, borderRadius:6, padding:"3px 9px", fontSize:12, fontWeight:700 }}>{cd}</span>}
+      {cd && <span style={{ background:C.green, color:C.onClaret, borderRadius:6, padding:"3px 9px", fontSize:12, fontWeight:700 }}>{cd}</span>}
     </div>
   );
 }
@@ -349,7 +350,7 @@ function PrizesPanel() {
           { n:"7", text:"If a player withdraws (WD) from the tournament after teeing off, that is considered part of the game. No replacement is made — the player's score at the point of withdrawal carries forward using the missed-cut rule (Rule 6)." },
         ].map(r => (
           <div key={r.n} style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
-            <span style={{ background:C.green, color:C.white, borderRadius:"50%", width:20, height:20, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, flexShrink:0, marginTop:1 }}>{r.n}</span>
+            <span style={{ background:C.green, color:C.onClaret, borderRadius:"50%", width:20, height:20, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, flexShrink:0, marginTop:1 }}>{r.n}</span>
             <span style={{ color:C.mutedLight, fontSize:12, lineHeight:1.6 }}>{r.text}</span>
           </div>
         ))}
@@ -370,7 +371,7 @@ function PricingBanner() {
         </div>
         <div style={{ flex:1, minWidth:140, background:C.black, borderRadius:8, padding:"10px 12px", border:`1px solid ${C.green}88`, position:"relative" }}>
           <div style={{ position:"absolute", top:-9, right:8 }}>
-            <span style={{ background:C.green, color:C.white, borderRadius:99, padding:"2px 9px", fontSize:11, fontWeight:700 }}>🔥 Best Value</span>
+            <span style={{ background:C.green, color:C.onClaret, borderRadius:99, padding:"2px 9px", fontSize:11, fontWeight:700 }}>🔥 Best Value</span>
           </div>
           <div style={{ color:C.green, fontWeight:800, fontSize:22 }}>€{PRICE_BUNDLE}</div>
           <div style={{ color:C.mutedLight, fontSize:12 }}>for <strong style={{ color:C.white }}>3 entries</strong> — save €{PRICE_SINGLE*3-PRICE_BUNDLE}!</div>
@@ -450,7 +451,7 @@ function BucketSelector({ picks, onPick }) {
                 padding:"7px 12px", borderRadius:6,
                 border:picks[b.id]===p?`1px solid ${C.green}`:`1px solid ${C.border}`,
                 background:picks[b.id]===p?C.greenDark:C.black,
-                color:picks[b.id]===p?C.white:C.mutedLight,
+                color:picks[b.id]===p?C.onClaret:C.muted,
                 cursor:"pointer", fontSize:13, fontWeight:picks[b.id]===p?700:400,
                 fontFamily:"inherit", transition:"all 0.12s",
               }}>{amLabel(p)}</button>
@@ -621,12 +622,12 @@ function EnterPicks({ entries, setEntries, scores }) {
                 flex:1, padding:"14px 0", borderRadius:10,
                 border:numTeams===n?`2px solid ${C.green}`:`1px solid ${C.border}`,
                 background:numTeams===n?C.greenDark:C.black,
-                color:numTeams===n?C.white:C.mutedLight,
+                color:numTeams===n?"#fff5ee":C.muted,
                 cursor:"pointer", fontFamily:"inherit", fontWeight:700, fontSize:16, lineHeight:1.3,
                 boxShadow:numTeams===n?`0 0 14px ${C.greenGlow}`:"none", transition:"all 0.15s",
               }}>
                 {n === 1 ? "1 Entry" : "3 Entries"}
-                <div style={{ fontSize:12, color:numTeams===n?C.greenLight:C.muted, marginTop:3 }}>
+                <div style={{ fontSize:12, color:numTeams===n?"#f0c4cb":C.muted, marginTop:3 }}>
                   {n===1 ? `€${PRICE_SINGLE}` : `€${PRICE_BUNDLE} 🔥 Save €${PRICE_SINGLE*3-PRICE_BUNDLE}`}
                 </div>
               </button>
@@ -656,7 +657,7 @@ function EnterPicks({ entries, setEntries, scores }) {
 
           {error && <div style={{ color:"#a32d2d", fontSize:13, margin:"8px 0" }}>{error}</div>}
           <button onClick={startFilling} style={{
-            width:"100%", marginTop:14, background:C.green, color:C.white,
+            width:"100%", marginTop:14, background:C.green, color:C.onClaret,
             border:"none", borderRadius:8, padding:"13px 0", fontSize:15,
             fontWeight:700, cursor:"pointer", fontFamily:"inherit",
             boxShadow:`0 0 16px ${C.greenGlow}`, transition:"all 0.15s",
@@ -691,7 +692,7 @@ function EnterPicks({ entries, setEntries, scores }) {
             <button onClick={quickPick} style={{
               background:`linear-gradient(135deg, ${C.green}, ${C.greenDark})`,
               border:`1px solid ${C.green}`,
-              color:C.white, borderRadius:8, padding:"7px 12px",
+              color:C.onClaret, borderRadius:8, padding:"7px 12px",
               fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit",
               display:"flex", alignItems:"center", gap:5,
               boxShadow:`0 0 10px ${C.greenGlow}`,
@@ -726,7 +727,7 @@ function EnterPicks({ entries, setEntries, scores }) {
         {error && <div style={{ color:"#a32d2d", fontSize:13, margin:"10px 0", textAlign:"center" }}>{error}</div>}
         <div style={{ textAlign:"center", marginTop:16 }}>
           <button onClick={submitTeam} style={{
-            background:ready?C.green:C.border, color:ready?C.white:C.muted,
+            background:ready?C.green:C.border, color:ready?C.onClaret:C.muted,
             border:"none", borderRadius:8, padding:"13px 36px",
             fontSize:14, fontWeight:700, cursor:ready?"pointer":"not-allowed",
             fontFamily:"inherit", boxShadow:ready?`0 0 16px ${C.greenGlow}`:"none", transition:"all 0.15s",
@@ -790,7 +791,7 @@ function EnterPicks({ entries, setEntries, scores }) {
                 flex:1, padding:"10px 8px", borderRadius:8,
                 border:payMethod===opt.id?`1px solid ${C.green}`:`1px solid ${C.border}`,
                 background:payMethod===opt.id?C.greenDark:C.black,
-                color:payMethod===opt.id?C.white:C.muted,
+                color:payMethod===opt.id?C.onClaret:C.muted,
                 cursor:"pointer", fontFamily:"inherit", fontWeight:600, fontSize:13, lineHeight:1.4, textAlign:"center",
               }}>
                 {opt.label}
@@ -1080,7 +1081,7 @@ function ContactUs() {
             <div style={{ color:C.red, fontSize:13 }}>{errMsg}</div>
           )}
           <button onClick={handleSubmit} disabled={status==="sending"} style={{
-            background:C.green, color:C.white, border:"none", borderRadius:8,
+            background:C.green, color:C.onClaret, border:"none", borderRadius:8,
             padding:"12px 16px", fontSize:15, fontWeight:700, fontFamily:"inherit",
             cursor: status==="sending" ? "default" : "pointer", opacity: status==="sending" ? 0.7 : 1,
           }}>{status==="sending" ? "Sending…" : "Send Message"}</button>
@@ -1138,7 +1139,7 @@ function Admin({ entries, setEntries }) {
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
         <h2 style={{ color:C.white, margin:0, fontSize:18 }}>⚙ Admin Panel</h2>
         <div style={{ display:"flex", gap:8 }}>
-          {entries.length>0 && <button onClick={downloadCSV} style={{ background:C.greenDark, color:C.white, border:`1px solid ${C.green}`, borderRadius:6, padding:"6px 12px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>⬇ Download CSV</button>}
+          {entries.length>0 && <button onClick={downloadCSV} style={{ background:C.greenDark, color:C.onClaret, border:`1px solid ${C.green}`, borderRadius:6, padding:"6px 12px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>⬇ Download CSV</button>}
           {entries.length>0 && <button onClick={clear} style={{ background:"#fbe2e2", color:"#a32d2d", border:"none", borderRadius:6, padding:"6px 12px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Clear All</button>}
         </div>
       </div>
@@ -1213,7 +1214,7 @@ function AdminLogin({ onSuccess }) {
       <input type="password" value={pin} onChange={e=>{setPin(e.target.value);setErr(false);}} onKeyDown={e=>e.key==="Enter"&&attempt()} placeholder="Enter PIN"
         style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:err?`1px solid ${C.red}`:`1px solid ${C.border}`, background:C.blackCard, color:C.white, fontSize:16, boxSizing:"border-box", fontFamily:"inherit", textAlign:"center", letterSpacing:"0.2em", outline:"none", marginBottom:8 }} />
       {err && <div style={{ color:"#a32d2d", fontSize:12, marginBottom:8 }}>Incorrect PIN</div>}
-      <button onClick={attempt} style={{ background:C.green, color:C.white, border:"none", borderRadius:8, padding:"10px 24px", fontWeight:700, cursor:"pointer", fontFamily:"inherit", width:"100%" }}>Unlock</button>
+      <button onClick={attempt} style={{ background:C.green, color:C.onClaret, border:"none", borderRadius:8, padding:"10px 24px", fontWeight:700, cursor:"pointer", fontFamily:"inherit", width:"100%" }}>Unlock</button>
     </div>
   );
 }
