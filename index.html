@@ -56,9 +56,9 @@ const { useState, useEffect, useCallback } = React;
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const ADMIN_PIN    = "210520151234";
 const REVOLUT_ME   = "ciaranusuf";
-const PRICE_SINGLE = 10;
-const PRICE_BUNDLE = 20;   // 3 entries for €20
-const DEADLINE     = new Date("2026-06-18T11:00:00+01:00"); // 11am Dublin time
+const PRICE_SINGLE = 5;
+const PRICE_BUNDLE = 10;   // 3 entries for €10
+const DEADLINE     = new Date("2026-07-16T00:01:00+01:00"); // 00:01 Dublin time
 
 // Players who miss the cut are assigned the score of the last-placed finisher.
 // Auto-populated from the /api/scores `cut` array on each refresh (see refreshScores).
@@ -136,11 +136,11 @@ const amLabel = (p) => AMATEURS.has(p) ? p + " (a)" : p;
 const SCORE_OPTIONS = Array.from({ length: 31 }, (_, i) => i - 20);
 
 const PRIZES = [
-  { pos:1, icon:"🥇", label:"1st Place", color:C.gold,   prize:"20% of pot · €190" },
-  { pos:2, icon:"🥈", label:"2nd Place", color:C.silver, prize:"10% of pot · €95"  },
-  { pos:3, icon:"🥉", label:"3rd Place", color:C.bronze, prize:"7% of pot · €66"   },
-  { pos:4, icon:"🏅", label:"4th Place", color:"#a0a0a0", prize:"5% of pot · €48"   },
-  { pos:5, icon:"🎖️", label:"5th Place", color:"#cd7f32", prize:"3% of pot · €28"  },
+  { pos:1, icon:"🥇", label:"1st Place", color:C.gold,   prize:"35% of pot" },
+  { pos:2, icon:"🥈", label:"2nd Place", color:C.silver, prize:"20% of pot" },
+  { pos:3, icon:"🥉", label:"3rd Place", color:C.bronze, prize:"10% of pot" },
+  { pos:4, icon:"🏅", label:"4th Place", color:"#a0a0a0", prize:"5% of pot"  },
+  { pos:5, icon:"🎖️", label:"5th Place", color:"#cd7f32", prize:"5% of pot"  },
 ];
 
 // ─── MOCK SCORES ──────────────────────────────────────────────────────────────
@@ -316,7 +316,7 @@ function DeadlineBanner() {
     <div style={{ background: past ? "#fbe2e2" : C.greenDeep, border:`1px solid ${past?"#c0292b":C.green}`, borderRadius:8, padding:"8px 12px", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
       <div>
         <span style={{ fontSize:13, color:past?"#a32d2d":C.white, fontWeight:700 }}>
-          {past ? "⛔ Entries Closed" : "⏰ Deadline: 11am Dublin Time, Thu 18 June 2026"}
+          {past ? "⛔ Entries Closed" : "⏰ Deadline: 00:01 Dublin Time, Thu 16 July 2026"}
         </span>
         {!past && <div style={{ color:C.greenLight, fontSize:11, marginTop:1 }}>Last entries & payment accepted by 11am</div>}
       </div>
@@ -342,7 +342,7 @@ function PrizesPanel() {
       <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
         {[
           { n:"1", text:"Pick one golfer from each of the ten buckets (see next page)." },
-          { n:"2", text:"Pay your entry fee — €10 for one selection or €20 for three." },
+          { n:"2", text:"Pay your entry fee — €5 for one selection or €10 for three." },
           { n:"3", text:"The winner has the lowest aggregate score from their best 5 of 10 players." },
           { n:"4", text:"Ties are broken by the closest tiebreaker prediction to the actual Open Championship winning score." },
           { n:"5", text:"If a player does not start (DNS) the tournament due to injury, illness or any other reason, all participants who selected that player will have them replaced by a randomly assigned alternate from the same bucket. This replacement will be applied uniformly." },
@@ -540,7 +540,7 @@ function EnterPicks({ entries, setEntries, scores }) {
 
   function startFilling() {
     if (new Date() >= DEADLINE) {
-      setError("⛔ Entries are now closed. The deadline was 11am Dublin time on 18 June 2026.");
+      setError("⛔ Entries are now closed. The deadline was 00:01 Dublin time on 16 July 2026.");
       return;
     }
     if (!personName.trim()) { setError("Please enter your name."); return; }
@@ -555,7 +555,7 @@ function EnterPicks({ entries, setEntries, scores }) {
 
   async function submitTeam() {
     if (new Date() >= DEADLINE) {
-      setError("⛔ Entries are now closed. The deadline was 11am Dublin time on 18 June 2026.");
+      setError("⛔ Entries are now closed. The deadline was 00:01 Dublin time on 16 July 2026.");
       return;
     }
     if (!currentTeamName.trim()) { setError("Please enter a team name."); return; }
@@ -1187,13 +1187,13 @@ function Admin({ entries, setEntries }) {
         <ul style={{ margin:0, paddingLeft:16, lineHeight:2 }}>
           <li>Select one player from each of 10 buckets (10 picks total)</li>
           <li><strong style={{ color:C.offWhite }}>Rule 1:</strong> Pick one golfer from each of the 10 buckets</li>
-          <li><strong style={{ color:C.offWhite }}>Rule 2:</strong> Pay €10 per entry or €20 for three entries</li>
+          <li><strong style={{ color:C.offWhite }}>Rule 2:</strong> Pay €5 per entry or €10 for three entries</li>
           <li><strong style={{ color:C.offWhite }}>Rule 3:</strong> Winner = lowest aggregate score from best 5 of 10 picks</li>
           <li><strong style={{ color:C.offWhite }}>Rule 4:</strong> Ties decided by closest tiebreaker guess to the winning score vs par</li>
           <li><strong style={{ color:C.offWhite }}>Rule 5:</strong> Players missing the cut receive the last-placed finisher's score for Sat & Sun</li>
           <li>€{PRICE_SINGLE} per entry · 3 entries for €{PRICE_BUNDLE}</li>
-          <li>1st: €100 · 2nd: €50 · 3rd: €25</li>
-          <li>⏰ Deadline: 11am Dublin Time, Thu 18 June 2026</li>
+          <li>🥇 35% · 🥈 20% · 🥉 10% · 4th 5% · 5th 5% of pot</li>
+          <li>⏰ Deadline: 00:01 Dublin Time, Thu 16 July 2026</li>
           <li>The Open @ Royal Birkdale, Jul 16–19 2026</li>
           <li>Revolut: <strong style={{ color:C.purpleLight }}>@{REVOLUT_ME}</strong></li>
         </ul>
