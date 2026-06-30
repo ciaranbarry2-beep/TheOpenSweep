@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Swords Celtic Sweep 2026</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0a; font-family: Georgia, serif; color: #fff; }
+    input, button, select, textarea { font-family: Georgia, serif; }
+    #loading { padding:60px; text-align:center; color:#119647; font-size:16px; }
+  </style>
+</head>
+<body>
+  <div id="root"><div id="loading">⛳ Loading Swords Celtic Sweep 2026...<br><br><small style="color:#555">Please wait — loading resources</small></div></div>
+
+  <script>
+  // Load scripts sequentially to avoid race conditions
+  function loadScript(src, cb) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = cb;
+    s.onerror = function() {
+      document.getElementById('loading').innerHTML = '❌ Failed to load: ' + src + '<br>Please check your internet connection and refresh.';
+    };
+    document.head.appendChild(s);
+  }
+
+  loadScript('https://unpkg.com/react@18.2.0/umd/react.production.min.js', function() {
+    loadScript('https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js', function() {
+      loadScript('https://unpkg.com/@babel/standalone@7.23.2/babel.min.js', function() {
+        // All loaded — now compile and run the app
+        var appCode = document.getElementById('app-source').textContent;
+        try {
+          var compiled = Babel.transform(appCode, {
+            presets: ['react'],
+            plugins: []
+          }).code;
+          var fn = new Function('React', 'ReactDOM', compiled + '\nreturn App;');
+          var App = fn(React, ReactDOM);
+          var root = ReactDOM.createRoot(document.getElementById('root'));
+          root.render(React.createElement(App));
+        } catch(err) {
+          document.getElementById('root').innerHTML = '<div style="padding:40px;color:#f87171;font-family:monospace;white-space:pre-wrap;">Error: ' + err.message + '</div>';
+        }
+      });
+    });
+  });
+  </script>
+
+  <script id="app-source" type="text/plain">
+const { useState, useEffect, useCallback } = React;
+
+
+
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const ADMIN_PIN    = "210520151234";
+const REVOLUT_ME   = "ciaranusuf";
+const PRICE_SINGLE = 10;
+const PRICE_BUNDLE = 20;   // 3 entries for €20
+const DEADLINE     = new Date("2026-06-18T11:00:00+01:00"); // 11am Dublin time
+
+// Players who miss the cut are assigned the score of the last-placed finisher.
+// Auto-populated from the /api/scores `cut` array on each refresh (see refreshScores).
+// Still a plain Set so effectiveScore() and the leaderboard can read it synchronously.
+// Admins can also add names manually for edge cases via missedCut.add("Player Name").
+const missedCut = new Set([
+  // Populated automatically during the tournament from ESPN cut data.
+]);
+
+// ─── SWORDS CELTIC COLOURS (green + black) ────────────────────────────────────
+const C = {
+  green:      "#119647",
+  greenDark:  "#0a6b30",
+  greenDeep:  "#083d1c",
+  greenLight: "#3dc978",
+  greenGlow:  "#11964733",
+  black:      "#0a0a0a",
+  blackMid:   "#111111",
+  blackCard:  "#181818",
+  blackLight: "#222222",
+  border:     "#2a2a2a",
+  borderGreen:"#11964755",
+  muted:      "#555555",
+  mutedLight: "#888888",
+  white:      "#ffffff",
+  offWhite:   "#e8f5ee",
+  amber:      "#f59e0b",
+  amberLight: "#fcd34d",
+  gold:       "#FFD700",
+  silver:     "#C0C0C0",
+  bronze:     "#CD7F32",
+  purple:     "#7c3aed",
+  purpleLight:"#c4b5fd",
+  red:        "#dc2626",
+};
+
+// ─── 100 PLAYERS IN 10 BUCKETS OF 10 ─────────────────────────────────────────
+const BUCKETS = [
+  { id:1,  label:"Bucket 1",  tier:"Elite Favourites",
+    players:["Scottie Scheffler","Rory McIlroy","Jon Rahm","Xander Schauffele","Cameron Young","Tommy Fleetwood","Bryson DeChambeau","Ludvig Åberg","Viktor Hovland","Russell Henley"] },
+  { id:2,  label:"Bucket 2",  tier:"Top Contenders",
+    players:["Collin Morikawa","Justin Thomas","Shane Lowry","Hideki Matsuyama","Tyrrell Hatton","Patrick Cantlay","Sam Burns","Ben Griffin","Robert MacIntyre","Justin Rose"] },
+  { id:3,  label:"Bucket 3",  tier:"Strong Challengers",
+    players:["Matt Fitzpatrick","Brooks Koepka","Keegan Bradley","J.J. Spaun","Sepp Straka","Aaron Rai","Maverick McNealy","Corey Conners","Chris Gotterup","Akshay Bhatia"] },
+  { id:4,  label:"Bucket 4",  tier:"Dark Horses",
+    players:["Harris English","Sungjae Im","Min Woo Lee","Jacob Bridgeman","Nick Taylor","Andrew Novak","Si Woo Kim","Kurt Kitayama","Nicolai Højgaard","Patrick Reed"] },
+  { id:5,  label:"Bucket 5",  tier:"Mid-Range Picks",
+    players:["Joaquín Niemann","Alex Noren","Harry Hall","Ryan Gerard","Rickie Fowler","Jake Knapp","Jason Day","Daniel Berger","Michael Kim","Gary Woodland"] },
+  { id:6,  label:"Bucket 6",  tier:"Value Plays",
+    players:["Adam Scott","Jordan Spieth","Alex Smalley","Marco Penge","Matt McCarty","Nico Echavarria","Sam Stevens","Ryan Fox","Brian Harman","Pierceson Coody"] },
+  { id:7,  label:"Bucket 7",  tier:"Sleeper Picks",
+    players:["David Puig","Ryo Hisatsune","Michael Brennan","Kristoffer Reitan","Sahith Theegala","Patrick Rodgers","Alex Fitzpatrick","Matti Schmid","Lucas Herbert","Keith Mitchell"] },
+  { id:8,  label:"Bucket 8",  tier:"Long Shots",
+    players:["Davis Thompson","Taylor Montgomery","Billy Horschel","Tom Kim","Chris Kirk","Emiliano Grillo","Max Greyserman","Andrew Putnam","Nick Hardy","Caleb Surratt"] },
+  { id:9,  label:"Bucket 9",  tier:"Big Outsiders",
+    players:["Peter Uihlein","Graeme McDowell","J.B. Holmes","Padraig Harrington","Zac Blair","Matthew Jordan","Niklas Nørgaard","Angel Hidalgo","Carl Yuan","Dylan Wu"] },
+  { id:10, label:"Bucket 10", tier:"Qualifiers & Amateurs",
+    players:["Johnny Keefer","Brandon Wu","Cole Hammer","Neal Shipley","Ben Silverman","Jackson Koivun","Mason Howell","Miles Russell","Ethan Fang","Preston Stout"] },
+];
+
+// Amateur players — names match ESPN exactly (no "(a)" suffix, which would break
+// score lookups). The "(a)" tag is appended at render time via amLabel() instead.
+const AMATEURS = new Set(["Jackson Koivun","Mason Howell","Miles Russell","Ethan Fang","Preston Stout"]);
+const amLabel = (p) => AMATEURS.has(p) ? p + " (a)" : p;
+
+const SCORE_OPTIONS = Array.from({ length: 31 }, (_, i) => i - 20);
+
+const PRIZES = [
+  { pos:1, icon:"🥇", label:"1st Place", color:C.gold,   prize:"20% of pot · €190" },
+  { pos:2, icon:"🥈", label:"2nd Place", color:C.silver, prize:"10% of pot · €95"  },
+  { pos:3, icon:"🥉", label:"3rd Place", color:C.bronze, prize:"7% of pot · €66"   },
+  { pos:4, icon:"🏅", label:"4th Place", color:"#a0a0a0", prize:"5% of pot · €48"   },
+  { pos:5, icon:"🎖️", label:"5th Place", color:"#cd7f32", prize:"3% of pot · €28"  },
+];
+
+// ─── MOCK SCORES ──────────────────────────────────────────────────────────────
+function generateMockScores() {
+  const s = {};
+  BUCKETS.forEach(b => b.players.forEach(p => {
+    s[p] = Math.round((Math.random() - 0.5) * 14 + (b.id - 1) * 1.1);
+  }));
+  return s;
+}
+
+// ─── LIVE SCORES — fetched from /api/scores serverless function ───────────────
+async function fetchLiveScores() {
+  try {
+    const res = await fetch("/api/scores");
+    if (!res.ok) throw new Error("API error");
+    const data = await res.json();
+    if (data && data.scores && Object.keys(data.scores).length > 0) {
+      return {
+        scores: data.scores,
+        source: data.source || "live",
+        round: data.round,
+        cut: Array.isArray(data.cut) ? data.cut : [],
+        withdrawn: Array.isArray(data.withdrawn) ? data.withdrawn : [],
+      };
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
+}
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+// ─── DATABASE — all calls go through /api/entries on Vercel (no CORS issues) ──
+async function loadEntries() {
+  try {
+    const res = await fetch("/api/entries");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const rows = await res.json();
+    return rows.map(r => ({
+      id: r.id,
+      personName: r.person_name,
+      contact: r.contact,
+      teamName: r.team_name,
+      picks: r.picks,
+      tiebreaker: r.tiebreaker,
+      submittedAt: r.submitted_at,
+    }));
+  } catch(e) {
+    console.error("loadEntries error:", e.message);
+    try { const r = localStorage.getItem("sweep_entries"); return r ? JSON.parse(r) : []; }
+    catch { return []; }
+  }
+}
+
+async function saveEntries(entries) {
+  // no-op — kept for compatibility
+}
+
+async function saveEntry(entry) {
+  try {
+    const res = await fetch("/api/entries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        person_name: entry.personName,
+        contact: entry.contact,
+        team_name: entry.teamName,
+        picks: entry.picks,
+        tiebreaker: entry.tiebreaker,
+        submitted_at: entry.submittedAt,
+      }),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status + " " + await res.text());
+    return true;
+  } catch(e) {
+    console.error("saveEntry error:", e.message);
+    try {
+      const existing = JSON.parse(localStorage.getItem("sweep_entries") || "[]");
+      existing.push(entry);
+      localStorage.setItem("sweep_entries", JSON.stringify(existing));
+    } catch {}
+    return false;
+  }
+}
+
+async function deleteEntry(id) {
+  try {
+    const res = await fetch("/api/entries?id=" + id, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return true;
+  } catch(e) {
+    console.error("deleteEntry error:", e.message);
+    return false;
+  }
+}
+
+async function deleteAllEntries() {
+  try {
+    const res = await fetch("/api/entries?all=true", {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return true;
+  } catch(e) {
+    console.error("deleteAllEntries error:", e.message);
+    return false;
+  }
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function fmt(s) {
+  if (s === null || s === undefined) return "–";
+  if (s === 0) return "E";
+  return s > 0 ? `+${s}` : `${s}`;
+}
+// Returns the effective score for a player: if they missed the cut, they receive
+// the score of the last-placed finisher (worst score in the field that weekend).
+function effectiveScore(player, scores) {
+  if (scores[player] === undefined) return undefined;
+  if (missedCut.has(player)) {
+    // Assign the worst (highest) score in the field as the missed-cut penalty
+    const allScores = Object.values(scores).filter(v => v !== undefined);
+    return allScores.length ? Math.max(...allScores) : scores[player];
+  }
+  return scores[player];
+}
+function best5total(picks, scores) {
+  return picks.map(p => effectiveScore(p, scores))
+    .filter(v => v !== undefined)
+    .sort((a,b) => a-b).slice(0,5).reduce((a,b) => a+b, 0);
+}
+function deadlineCountdown() {
+  const diff = DEADLINE - new Date();
+  if (diff <= 0) return null;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h > 48) { const d = Math.floor(h/24); return `${d}d ${h%24}h remaining`; }
+  return `${h}h ${m}m remaining`;
+}
+
+// ─── UI ATOMS ─────────────────────────────────────────────────────────────────
+function ScoreBadge({ score }) {
+  const col = score < -5 ? "#4ade80" : score < 0 ? "#86efac" : score === 0 ? C.muted : score < 5 ? C.amber : C.red;
+  return <span style={{ fontFamily:"monospace", fontWeight:700, fontSize:13, color:col, minWidth:36, display:"inline-block", textAlign:"right" }}>{fmt(score)}</span>;
+}
+function GreenPill({ children }) {
+  return <span style={{ background:C.green, color:C.white, borderRadius:99, padding:"2px 10px", fontSize:11, fontWeight:700, letterSpacing:"0.05em", textTransform:"uppercase" }}>{children}</span>;
+}
+function Lbl({ children }) {
+  return <div style={{ color:C.mutedLight, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>{children}</div>;
+}
+function Input({ value, onChange, placeholder, type="text" }) {
+  return (
+    <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+      style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:`1px solid ${C.border}`,
+        background:C.blackCard, color:C.white, fontSize:14, boxSizing:"border-box",
+        fontFamily:"inherit", outline:"none" }} />
+  );
+}
+
+// ─── DEADLINE BANNER ──────────────────────────────────────────────────────────
+function DeadlineBanner() {
+  const [cd, setCd] = useState(deadlineCountdown());
+  useEffect(() => {
+    const iv = setInterval(() => setCd(deadlineCountdown()), 30000);
+    return () => clearInterval(iv);
+  }, []);
+  const past = !cd;
+  return (
+    <div style={{ background: past ? "#3f0000" : C.greenDeep, border:`1px solid ${past?"#dc2626":C.green}`, borderRadius:8, padding:"8px 12px", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
+      <div>
+        <span style={{ fontSize:13, color:past?"#f87171":C.white, fontWeight:700 }}>
+          {past ? "⛔ Entries Closed" : "⏰ Deadline: 11am Dublin Time, Thu 18 June 2026"}
+        </span>
+        {!past && <div style={{ color:C.greenLight, fontSize:11, marginTop:1 }}>Last entries & payment accepted by 11am</div>}
+      </div>
+      {cd && <span style={{ background:C.green, color:C.white, borderRadius:6, padding:"3px 9px", fontSize:12, fontWeight:700 }}>{cd}</span>}
+    </div>
+  );
+}
+
+// ─── PRIZES & RULES PANEL ─────────────────────────────────────────────────────
+function PrizesPanel() {
+  return (
+    <div style={{ background:C.blackCard, border:`1px solid ${C.border}`, borderRadius:10, padding:14, marginBottom:14 }}>
+      <Lbl>🏆 Prizes & Rules</Lbl>
+      <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:14 }}>
+        {PRIZES.map(p => (
+          <div key={p.pos} style={{ flex:1, minWidth:90, background:C.black, borderRadius:8, padding:"10px 10px", border:`1px solid ${p.color}44`, textAlign:"center" }}>
+            <div style={{ fontSize:22 }}>{p.icon}</div>
+            <div style={{ color:p.color, fontWeight:700, fontSize:12, marginTop:2 }}>{p.label}</div>
+            <div style={{ color:C.white, fontWeight:800, fontSize:13, marginTop:3 }}>{p.prize}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+        {[
+          { n:"1", text:"Pick one golfer from each of the ten buckets (see next page)." },
+          { n:"2", text:"Pay your entry fee — €10 for one selection or €20 for three." },
+          { n:"3", text:"The winner has the lowest aggregate score from their best 5 of 10 players." },
+          { n:"4", text:"Ties are broken by the closest tiebreaker prediction to the actual US Open winning score." },
+          { n:"5", text:"If a player does not start (DNS) the tournament due to injury, illness or any other reason, all participants who selected that player will have them replaced by a randomly assigned alternate from the same bucket. This replacement will be applied uniformly." },
+          { n:"6", text:"Players missing the cut are assigned the last-placed finisher's score for Saturday and Sunday." },
+          { n:"7", text:"If a player withdraws (WD) from the tournament after teeing off, that is considered part of the game. No replacement is made — the player's score at the point of withdrawal carries forward using the missed-cut rule (Rule 6)." },
+        ].map(r => (
+          <div key={r.n} style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
+            <span style={{ background:C.green, color:C.white, borderRadius:"50%", width:20, height:20, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, flexShrink:0, marginTop:1 }}>{r.n}</span>
+            <span style={{ color:C.mutedLight, fontSize:12, lineHeight:1.6 }}>{r.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── PRICING BANNER ───────────────────────────────────────────────────────────
+function PricingBanner() {
+  return (
+    <div style={{ background:C.blackCard, border:`1px solid ${C.border}`, borderRadius:10, padding:14, marginBottom:14 }}>
+      <Lbl>💶 Entry Fee</Lbl>
+      <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+        <div style={{ flex:1, minWidth:100, background:C.black, borderRadius:8, padding:"10px 12px", border:`1px solid ${C.border}` }}>
+          <div style={{ color:C.green, fontWeight:800, fontSize:22 }}>€{PRICE_SINGLE}</div>
+          <div style={{ color:C.mutedLight, fontSize:12 }}>per entry</div>
+        </div>
+        <div style={{ flex:1, minWidth:140, background:C.black, borderRadius:8, padding:"10px 12px", border:`1px solid ${C.green}88`, position:"relative" }}>
+          <div style={{ position:"absolute", top:-9, right:8 }}>
+            <span style={{ background:C.green, color:C.white, borderRadius:99, padding:"2px 9px", fontSize:11, fontWeight:700 }}>🔥 Best Value</span>
+          </div>
+          <div style={{ color:C.green, fontWeight:800, fontSize:22 }}>€{PRICE_BUNDLE}</div>
+          <div style={{ color:C.mutedLight, fontSize:12 }}>for <strong style={{ color:C.white }}>3 entries</strong> — save €{PRICE_SINGLE*3-PRICE_BUNDLE}!</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── TIEBREAKER ───────────────────────────────────────────────────────────────
+function TiebreakerInput({ value, onChange }) {
+  return (
+    <div style={{ background:C.blackCard, borderRadius:10, border:value!==null?`1px solid ${C.green}77`:`1px solid ${C.border}`, overflow:"hidden" }}>
+      <div style={{ padding:"8px 12px", background:C.black, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
+        <span style={{ color:C.green, fontWeight:700, fontSize:13 }}>🏆 Tiebreaker</span>
+        <span style={{ color:C.muted, fontSize:11 }}>Used only if scores are tied</span>
+        {value!==null && <GreenPill>✓ {fmt(value)}</GreenPill>}
+      </div>
+      <div style={{ padding:12 }}>
+        <p style={{ color:C.muted, fontSize:12, margin:"0 0 10px" }}>What will the winning score be vs par at Shinnecock Hills?</p>
+        <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
+          {SCORE_OPTIONS.map(s => (
+            <button key={s} onClick={() => onChange(s)} style={{
+              padding:"5px 8px", borderRadius:6,
+              border:value===s?`1px solid ${C.green}`:`1px solid ${C.border}`,
+              background:value===s?C.greenDark:C.black,
+              color:value===s?C.white:s<0?"#4ade80":s===0?C.muted:"#f87171",
+              cursor:"pointer", fontSize:12, fontWeight:value===s?700:400,
+              fontFamily:"monospace", minWidth:34, textAlign:"center", transition:"all 0.1s",
+            }}>{fmt(s)}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── NAV ──────────────────────────────────────────────────────────────────────
+function Nav({ view, setView, isAdmin }) {
+  const tabs = [
+    { id:"enter", label:"Enter Picks" },
+    { id:"leaderboard", label:"Leaderboard" },
+    { id:"players", label:"Player Scores" },
+    { id:"ourteam", label:"Our Team" },
+    { id:"contact", label:"Contact Us" },
+    ...(isAdmin?[{ id:"admin", label:"⚙ Admin" }]:[]),
+  ];
+  return (
+    <nav style={{ display:"flex", background:C.black, borderBottom:`1px solid ${C.border}`, overflowX:"auto" }}>
+      {tabs.map(t => (
+        <button key={t.id} onClick={() => setView(t.id)} style={{
+          background:"none", border:"none",
+          color:view===t.id?C.green:C.muted,
+          borderBottom:view===t.id?`2px solid ${C.green}`:"2px solid transparent",
+          padding:"12px 16px", fontSize:13, fontWeight:600,
+          cursor:"pointer", whiteSpace:"nowrap", fontFamily:"inherit", transition:"color 0.15s",
+        }}>{t.label}</button>
+      ))}
+    </nav>
+  );
+}
+
+// ─── BUCKET SELECTOR ──────────────────────────────────────────────────────────
+function BucketSelector({ picks, onPick }) {
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+      {BUCKETS.map(b => (
+        <div key={b.id} style={{ background:C.blackCard, borderRadius:10, border:picks[b.id]?`1px solid ${C.green}66`:`1px solid ${C.border}`, overflow:"hidden" }}>
+          <div style={{ padding:"8px 12px", background:C.black, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:4 }}>
+            <span style={{ color:C.green, fontWeight:700, fontSize:13 }}>{b.label}</span>
+            <span style={{ color:C.muted, fontSize:11 }}>{b.tier}</span>
+            {picks[b.id] && <GreenPill>✓ {picks[b.id].split(" ").slice(-1)[0]}</GreenPill>}
+          </div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6, padding:10 }}>
+            {b.players.map(p => (
+              <button key={p} onClick={() => onPick(b.id, p)} style={{
+                padding:"7px 12px", borderRadius:6,
+                border:picks[b.id]===p?`1px solid ${C.green}`:`1px solid ${C.border}`,
+                background:picks[b.id]===p?C.greenDark:C.black,
+                color:picks[b.id]===p?C.white:C.mutedLight,
+                cursor:"pointer", fontSize:13, fontWeight:picks[b.id]===p?700:400,
+                fontFamily:"inherit", transition:"all 0.12s",
+              }}>{amLabel(p)}</button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── REVOLUT CARD ─────────────────────────────────────────────────────────────
+function RevolutPayCard({ name, totalEntries }) {
+  const isBundle = totalEntries >= 3;
+  const amount   = isBundle ? PRICE_BUNDLE : totalEntries * PRICE_SINGLE;
+  const ref      = `USOpen2026-${name.replace(/\s+/g,"")}`;
+  return (
+    <div style={{ background:"linear-gradient(135deg,#1a0533,#0d1b3e)", border:`1px solid ${C.purple}55`, borderRadius:12, padding:16 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+        <span style={{ fontSize:20 }}>💜</span>
+        <span style={{ color:C.purpleLight, fontWeight:700, fontSize:15 }}>Pay via Revolut</span>
+      </div>
+      <div style={{ background:"#0f0520", borderRadius:8, padding:12, marginBottom:12 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+          <span style={{ color:"#7c3aed", fontSize:12 }}>{totalEntries} × entry</span>
+          <span style={{ color:C.offWhite, fontSize:12 }}>€{totalEntries*PRICE_SINGLE}</span>
+        </div>
+        {isBundle && (
+          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+            <span style={{ color:"#7c3aed", fontSize:12 }}>3-entry bundle discount</span>
+            <span style={{ color:"#4ade80", fontSize:12 }}>–€{PRICE_SINGLE*3-PRICE_BUNDLE}</span>
+          </div>
+        )}
+        <div style={{ display:"flex", justifyContent:"space-between", borderTop:"1px solid #1e1040", paddingTop:8, marginTop:4 }}>
+          <span style={{ color:C.purpleLight, fontWeight:700, fontSize:14 }}>Total due</span>
+          <span style={{ color:C.amber, fontWeight:800, fontSize:20 }}>€{amount}</span>
+        </div>
+      </div>
+      <div style={{ background:"#1e0040", borderRadius:6, padding:"8px 10px", marginBottom:12, fontSize:11 }}>
+        <span style={{ color:"#7c3aed" }}>Reference: </span>
+        <strong style={{ color:C.purpleLight }}>{ref}</strong>
+        <div style={{ color:"#4c1d95", fontSize:10, marginTop:2 }}>Include this so we can match your payment ✓</div>
+      </div>
+      <div style={{ textAlign:"center", marginBottom:12 }}>
+        <div style={{ color:"#7c3aed", fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:8 }}>Scan to Pay</div>
+        <img src="photos/revolut-qr.jpg" alt="Revolut QR Code" style={{ width:180, height:180, borderRadius:12, display:"block", margin:"0 auto", border:"2px solid #7c3aed44" }} />
+        <div style={{ color:"#4c1d95", fontSize:10, marginTop:6 }}>Point your phone camera at the QR code to pay instantly</div>
+      </div>
+      <a href={`https://revolut.me/${REVOLUT_ME}`} target="_blank" rel="noopener noreferrer"
+        style={{ display:"block", textAlign:"center", background:"linear-gradient(135deg,#7c3aed,#6d28d9)", color:C.white, borderRadius:8, padding:"12px 0", fontWeight:700, fontSize:14, textDecoration:"none" }}>
+        Open Revolut → @{REVOLUT_ME}
+      </a>
+    </div>
+  );
+}
+
+// ─── ENTER PICKS VIEW ─────────────────────────────────────────────────────────
+function EnterPicks({ entries, setEntries, scores }) {
+  // Step 1: how many teams? Step 2+: fill each team. Final: confirmation.
+  const [phase, setPhase] = useState("howMany"); // howMany | fillTeam | done
+  const [numTeams, setNumTeams] = useState(3);
+  const [personName, setPersonName] = useState("");
+  const [contact, setContact] = useState("");
+  const [teams, setTeams] = useState([]); // completed team submissions
+  const [currentPicks, setCurrentPicks] = useState({});
+  const [currentTeamName, setCurrentTeamName] = useState("");
+  const [tiebreaker, setTiebreaker] = useState(null);
+  const [payMethod, setPayMethod] = useState(null);
+  const [error, setError] = useState("");
+
+  const [showPayNow, setShowPayNow] = useState(false);
+
+  const teamIndex  = teams.length; // 0-based index of team currently being filled
+  const totalPicked = Object.keys(currentPicks).length;
+  const ready = totalPicked === 10 && currentTeamName.trim() && tiebreaker !== null;
+
+  function quickPick() {
+    const autoPicks = {};
+    BUCKETS.forEach(b => {
+      autoPicks[b.id] = b.players[Math.floor(Math.random() * b.players.length)];
+    });
+    const autoTiebreaker = SCORE_OPTIONS[Math.floor(Math.random() * SCORE_OPTIONS.length)];
+    setCurrentPicks(autoPicks);
+    setTiebreaker(autoTiebreaker);
+  }
+
+  function startFilling() {
+    if (new Date() >= DEADLINE) {
+      setError("⛔ Entries are now closed. The deadline was 11am Dublin time on 18 June 2026.");
+      return;
+    }
+    if (!personName.trim()) { setError("Please enter your name."); return; }
+    if (!contact.trim())    { setError("Please enter your email or phone number."); return; }
+    setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setPhase("fillTeam");
+    setCurrentPicks({});
+    setCurrentTeamName("");
+    setTiebreaker(null);
+  }
+
+  async function submitTeam() {
+    if (new Date() >= DEADLINE) {
+      setError("⛔ Entries are now closed. The deadline was 11am Dublin time on 18 June 2026.");
+      return;
+    }
+    if (!currentTeamName.trim()) { setError("Please enter a team name."); return; }
+    if (totalPicked < 10)        { setError("Please pick one player from every bucket."); return; }
+    if (tiebreaker === null)      { setError("Please select your tiebreaker prediction."); return; }
+    setError("");
+
+    const newTeam = {
+      id: Date.now() + Math.random(),
+      personName: personName.trim(),
+      contact: contact.trim(),
+      teamName: currentTeamName.trim(),
+      picks: Object.values(currentPicks),
+      tiebreaker,
+      submittedAt: new Date().toISOString(),
+    };
+
+    const updatedTeams = [...teams, newTeam];
+    setTeams(updatedTeams);
+
+    // Save this team to Supabase immediately
+    await saveEntry(newTeam);
+
+    if (updatedTeams.length < numTeams) {
+      // Loop back for next team
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setCurrentPicks({});
+      setCurrentTeamName("");
+      setTiebreaker(null);
+    } else {
+      // All teams done — reload from Supabase and go to confirmation
+      const fresh = await loadEntries();
+      setEntries(fresh);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setPhase("done");
+    }
+  }
+
+  // ── Phase: how many teams ──────────────────────────────────────────────────
+  if (phase === "howMany") {
+    return (
+      <div style={{ padding:20, maxWidth:560, margin:"0 auto" }}>
+        <DeadlineBanner />
+        <PrizesPanel />
+        <PricingBanner />
+
+        <div style={{ background:C.blackCard, borderRadius:12, padding:18, border:`1px solid ${C.border}` }}>
+          <h2 style={{ color:C.white, margin:"0 0 4px", fontSize:18 }}>Enter the Sweep</h2>
+          <p style={{ color:C.muted, fontSize:13, marginBottom:18 }}>Pick players from each of 10 buckets. Your score = your 5 best (lowest) scores combined.</p>
+
+          <div style={{ marginBottom:14 }}>
+            <Lbl>Your Name *</Lbl>
+            <Input value={personName} onChange={setPersonName} placeholder="e.g. Jane Murphy" />
+          </div>
+          <div style={{ marginBottom:18 }}>
+            <Lbl>Email or Phone *</Lbl>
+            <Input value={contact} onChange={setContact} placeholder="So we can reach you if you win" />
+          </div>
+
+          <Lbl>How many entries?</Lbl>
+          <div style={{ display:"flex", gap:10, marginBottom:6 }}>
+            {[1, 3].map(n => (
+              <button key={n} onClick={() => setNumTeams(n)} style={{
+                flex:1, padding:"14px 0", borderRadius:10,
+                border:numTeams===n?`2px solid ${C.green}`:`1px solid ${C.border}`,
+                background:numTeams===n?C.greenDark:C.black,
+                color:numTeams===n?C.white:C.mutedLight,
+                cursor:"pointer", fontFamily:"inherit", fontWeight:700, fontSize:16, lineHeight:1.3,
+                boxShadow:numTeams===n?`0 0 14px ${C.greenGlow}`:"none", transition:"all 0.15s",
+              }}>
+                {n === 1 ? "1 Entry" : "3 Entries"}
+                <div style={{ fontSize:12, color:numTeams===n?C.greenLight:C.muted, marginTop:3 }}>
+                  {n===1 ? `€${PRICE_SINGLE}` : `€${PRICE_BUNDLE} 🔥 Save €${PRICE_SINGLE*3-PRICE_BUNDLE}`}
+                </div>
+              </button>
+            ))}
+          </div>
+          {numTeams===3 && <div style={{ color:"#4ade80", fontSize:11, marginBottom:14 }}>🎉 3-entry bundle — only €{PRICE_BUNDLE} total!</div>}
+
+          {/* Pay Now option */}
+          <div style={{ borderTop:`1px solid ${C.border}`, marginTop:16, paddingTop:16 }}>
+            <button onClick={() => setShowPayNow(v => !v)} style={{
+              width:"100%", background:"none", border:`1px solid ${C.purple}66`,
+              borderRadius:8, padding:"11px 0", color:C.purpleLight,
+              fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
+              display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+            }}>
+              💜 {showPayNow ? "Hide Payment" : "Pay Now before picking"}
+            </button>
+            {showPayNow && (
+              <div style={{ marginTop:12 }}>
+                <div style={{ color:C.muted, fontSize:11, marginBottom:10, textAlign:"center" }}>
+                  You can pay now and complete your picks afterwards — just make sure both are done before the deadline.
+                </div>
+                <RevolutPayCard name={personName.trim() || "Participant"} totalEntries={numTeams} />
+              </div>
+            )}
+          </div>
+
+          {error && <div style={{ color:"#f87171", fontSize:13, margin:"8px 0" }}>{error}</div>}
+          <button onClick={startFilling} style={{
+            width:"100%", marginTop:14, background:C.green, color:C.white,
+            border:"none", borderRadius:8, padding:"13px 0", fontSize:15,
+            fontWeight:700, cursor:"pointer", fontFamily:"inherit",
+            boxShadow:`0 0 16px ${C.greenGlow}`, transition:"all 0.15s",
+          }}>Start Picking →</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Phase: fill team ───────────────────────────────────────────────────────
+  if (phase === "fillTeam") {
+    const teamNum = teamIndex + 1;
+    return (
+      <div style={{ padding:16, maxWidth:640, margin:"0 auto" }}>
+        {/* Progress indicator */}
+        {numTeams > 1 && (
+          <div style={{ display:"flex", gap:6, marginBottom:14 }}>
+            {Array.from({length:numTeams},(_,i) => (
+              <div key={i} style={{ flex:1, height:4, borderRadius:2, background: i<teamIndex?C.green:i===teamIndex?C.greenLight:C.border, transition:"background 0.3s" }} />
+            ))}
+          </div>
+        )}
+
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+          <div>
+            <h2 style={{ color:C.white, margin:"0 0 2px", fontSize:18 }}>
+              {numTeams>1 ? `Entry ${teamNum} of ${numTeams}` : "Your Team"}
+            </h2>
+            <div style={{ color:C.muted, fontSize:12 }}>Pick one player from each of the 10 buckets</div>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <button onClick={quickPick} style={{
+              background:`linear-gradient(135deg, ${C.greenDark}, #1a4a1a)`,
+              border:`1px solid ${C.green}`,
+              color:C.white, borderRadius:8, padding:"7px 12px",
+              fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit",
+              display:"flex", alignItems:"center", gap:5,
+              boxShadow:`0 0 10px ${C.greenGlow}`,
+            }}>
+              🎲 Quick Pick
+            </button>
+            <div style={{ color:C.green, fontWeight:700, fontSize:13 }}>{totalPicked}/10</div>
+          </div>
+        </div>
+
+        {totalPicked > 0 && (
+          <div style={{ background:`${C.green}11`, border:`1px solid ${C.green}33`, borderRadius:7, padding:"7px 12px", marginBottom:12, fontSize:12, color:C.mutedLight }}>
+            💡 Quick Pick has filled your selections — review below and change any you like before submitting.
+          </div>
+        )}
+
+        <div style={{ marginBottom:12 }}>
+          <div style={{ color:"#FFD700", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>⭐ Team Name *</div>
+          <input value={currentTeamName} onChange={e=>setCurrentTeamName(e.target.value)} placeholder={`e.g. "The Lucky Shamrocks"`}
+            style={{ width:"100%", padding:"11px 13px", borderRadius:8, border:"2px solid #FFD700",
+              background:"#1a1a00", color:C.white, fontSize:14, boxSizing:"border-box",
+              fontFamily:"inherit", outline:"none", boxShadow:"0 0 10px #FFD70033" }} />
+          <div style={{ color:"#a08800", fontSize:11, marginTop:4 }}>This name appears on the leaderboard — make it count!</div>
+        </div>
+
+        <BucketSelector picks={currentPicks} onPick={(bid, p) => setCurrentPicks(prev=>({...prev,[bid]:p}))} />
+
+        <div style={{ marginTop:14 }}>
+          <TiebreakerInput value={tiebreaker} onChange={setTiebreaker} />
+        </div>
+
+        {error && <div style={{ color:"#f87171", fontSize:13, margin:"10px 0", textAlign:"center" }}>{error}</div>}
+        <div style={{ textAlign:"center", marginTop:16 }}>
+          <button onClick={submitTeam} style={{
+            background:ready?C.green:C.border, color:ready?C.white:C.muted,
+            border:"none", borderRadius:8, padding:"13px 36px",
+            fontSize:14, fontWeight:700, cursor:ready?"pointer":"not-allowed",
+            fontFamily:"inherit", boxShadow:ready?`0 0 16px ${C.greenGlow}`:"none", transition:"all 0.15s",
+          }}>
+            {numTeams > 1 && teamIndex < numTeams-1
+              ? `Submit Entry ${teamNum} & Continue →`
+              : "Submit & See Payment →"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Phase: done — show all teams + payment ─────────────────────────────────
+  if (phase === "done") {
+    return (
+      <div style={{ padding:20, maxWidth:560, margin:"0 auto" }}>
+        <div style={{ textAlign:"center", marginBottom:20 }}>
+          <div style={{ fontSize:52 }}>🏌️</div>
+          <h2 style={{ color:C.green, margin:"6px 0 4px", fontSize:22 }}>
+            {teams.length > 1 ? "All Entries Submitted!" : "Entry Submitted!"}
+          </h2>
+          <p style={{ color:C.mutedLight, fontSize:13 }}>Thanks for supporting the 2015 Swords Celtic girls on their fundraising efforts for their October football trip to the UK.</p>
+        </div>
+
+        {/* All teams summary */}
+        {teams.map((t, ti) => {
+          const total = best5total(t.picks, scores);
+          return (
+            <div key={t.id} style={{ background:C.blackCard, border:`1px solid ${C.border}`, borderRadius:12, padding:14, marginBottom:10 }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                <div>
+                  <span style={{ color:C.green, fontWeight:700, fontSize:15 }}>{t.teamName}</span>
+                  {teams.length>1 && <span style={{ color:C.muted, fontSize:11, marginLeft:8 }}>Entry {ti+1}</span>}
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <span style={{ color:C.muted, fontSize:11 }}>Best 5:</span>
+                  <span style={{ fontFamily:"monospace", fontWeight:800, fontSize:16, color:total<0?"#4ade80":total===0?C.muted:"#f87171" }}>{fmt(total)}</span>
+                </div>
+              </div>
+              {t.picks.map((p,i) => (
+                <div key={p} style={{ display:"flex", justifyContent:"space-between", padding:"4px 0", borderBottom:i<9?`1px solid ${C.border}`:"none", fontSize:12 }}>
+                  <span><span style={{ color:C.muted, fontSize:10, marginRight:6 }}>B{i+1}</span><span style={{ color:C.offWhite }}>{amLabel(p)}</span></span>
+                  <ScoreBadge score={scores[p]} />
+                </div>
+              ))}
+              <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${C.green}44`, display:"flex", justifyContent:"space-between", fontSize:12 }}>
+                <span style={{ color:C.mutedLight }}>🏆 Tiebreaker</span>
+                <span style={{ fontFamily:"monospace", color:C.amberLight, fontWeight:700 }}>{fmt(t.tiebreaker)}</span>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Payment choice */}
+        <div style={{ background:C.blackCard, border:`1px solid ${C.border}`, borderRadius:10, padding:14, marginTop:16, marginBottom:10 }}>
+          <Lbl>How will you pay?</Lbl>
+          <div style={{ display:"flex", gap:8 }}>
+            {[{id:"revolut",label:"💜 Revolut",sub:"Pay online now"},{id:"cash",label:"💵 Cash",sub:"Pay organiser directly"}].map(opt => (
+              <button key={opt.id} onClick={() => setPayMethod(opt.id)} style={{
+                flex:1, padding:"10px 8px", borderRadius:8,
+                border:payMethod===opt.id?`1px solid ${C.green}`:`1px solid ${C.border}`,
+                background:payMethod===opt.id?C.greenDark:C.black,
+                color:payMethod===opt.id?C.white:C.muted,
+                cursor:"pointer", fontFamily:"inherit", fontWeight:600, fontSize:13, lineHeight:1.4, textAlign:"center",
+              }}>
+                {opt.label}
+                <div style={{ fontSize:10, color:payMethod===opt.id?C.greenLight:C.muted, marginTop:2 }}>{opt.sub}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {payMethod==="revolut" && <RevolutPayCard name={personName} totalEntries={teams.length} />}
+        {payMethod==="cash" && (
+          <div style={{ background:C.blackCard, border:`1px solid ${C.green}55`, borderRadius:12, padding:16, textAlign:"center" }}>
+            <div style={{ fontSize:28, marginBottom:8 }}>💵</div>
+            <div style={{ color:C.white, fontWeight:700, fontSize:15, marginBottom:6 }}>Paying Cash</div>
+            <div style={{ color:C.mutedLight, fontSize:13, marginBottom:10 }}>
+              Please hand <strong style={{ color:C.green }}>€{teams.length>=3?PRICE_BUNDLE:teams.length*PRICE_SINGLE}</strong> to the organiser and mention: <strong style={{ color:C.white }}>{personName}</strong>
+            </div>
+            <div style={{ background:C.black, borderRadius:8, padding:"8px 12px", fontSize:11, color:C.muted, border:`1px solid ${C.border}` }}>
+              ✅ Your picks are saved — we'll confirm when payment is received.
+            </div>
+          </div>
+        )}
+
+        <button onClick={() => window.location.reload()} style={{
+          width:"100%", marginTop:20, background:"none", border:`1px solid ${C.green}`,
+          color:C.green, borderRadius:8, padding:"12px 0", fontSize:13, fontWeight:600,
+          cursor:"pointer", fontFamily:"inherit",
+        }}>← Return to Homepage</button>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// ─── LEADERBOARD ──────────────────────────────────────────────────────────────
+function Leaderboard({ entries, scores }) {
+  // Provisional winning score = current lowest (best) score in the live field.
+  // This tracks the real leader as play unfolds rather than a fixed value, and
+  // becomes the actual winning score once the tournament finishes on Sunday.
+  const liveScores = Object.values(scores).filter(v => typeof v === "number");
+  const WINNING_SCORE = liveScores.length ? Math.min(...liveScores) : 0;
+  const ranked = entries
+    .map(e => ({
+      ...e,
+      total:  best5total(e.picks, scores),
+      tbDiff: Math.abs((e.tiebreaker??99) - WINNING_SCORE),
+      b5:     e.picks.map(p=>effectiveScore(p,scores)).filter(v=>v!==undefined).sort((a,b)=>a-b).slice(0,5),
+    }))
+    .sort((a,b) => a.total!==b.total ? a.total-b.total : a.tbDiff-b.tbDiff);
+
+  if (!ranked.length) return (
+    <div style={{ padding:40, textAlign:"center", color:C.muted }}>
+      <div style={{ fontSize:40, marginBottom:12 }}>📋</div>
+      No entries yet — be the first!
+    </div>
+  );
+
+  return (
+    <div style={{ padding:16, maxWidth:640, margin:"0 auto" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+        <h2 style={{ color:C.white, margin:0, fontSize:18 }}>Leaderboard</h2>
+        <GreenPill>{ranked.length} Entries</GreenPill>
+      </div>
+      <div style={{ color:C.muted, fontSize:11, marginBottom:10 }}>Best 5 of your 10 picks · Lowest score wins · Missed-cut players receive last-place score · Ties decided by tiebreaker (vs current leader {fmt(WINNING_SCORE)}, provisional until Sunday)</div>
+
+      <div style={{ display:"flex", gap:5, marginBottom:12 }}>
+        {PRIZES.map(p => (
+          <div key={p.pos} style={{ flex:1, background:C.blackCard, border:`1px solid ${p.color}44`, borderRadius:7, padding:"5px 7px", textAlign:"center" }}>
+            <span style={{ fontSize:13 }}>{p.icon}</span>
+            <div style={{ color:p.color, fontSize:10, fontWeight:700 }}>{p.prize}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+        {ranked.map((e,i) => {
+          const medal = ["🥇","🥈","🥉"][i] || null;
+          const pcolor = [C.gold,C.silver,C.bronze][i] || C.border;
+          return (
+            <div key={e.id} style={{ background:i===0?C.greenDeep:C.blackCard, border:`1px solid ${i<3?pcolor:C.border}`, borderRadius:10, padding:"12px 14px" }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:5 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ fontSize:17, width:22, textAlign:"center" }}>
+                    {medal||<span style={{ color:C.muted, fontWeight:700, fontSize:12 }}>#{i+1}</span>}
+                  </span>
+                  <div>
+                    <div style={{ color:C.white, fontWeight:700, fontSize:14 }}>{e.teamName}</div>
+                    <div style={{ color:C.muted, fontSize:10 }}>
+                      {e.personName} · 🏆 {fmt(e.tiebreaker)} (off by {e.tbDiff})
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                  <span style={{ color:C.muted, fontSize:10 }}>Best 5:</span>
+                  <span style={{ fontFamily:"monospace", fontWeight:800, fontSize:16, color:e.total<0?"#4ade80":e.total===0?C.muted:"#f87171" }}>{fmt(e.total)}</span>
+                </div>
+              </div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:3 }}>
+                {e.picks.map((p,pi) => {
+                  const s = effectiveScore(p, scores);
+                  const cut = missedCut.has(p);
+                  const inTop5 = e.b5.includes(s);
+                  return (
+                    <span key={pi} style={{ background:inTop5?C.greenDeep:C.black, border:inTop5?`1px solid ${C.green}`:`1px solid ${C.border}`, borderRadius:4, padding:"2px 6px", fontSize:10, color:inTop5?C.white:C.muted, display:"flex", alignItems:"center", gap:3 }}>
+                      {p.split(" ").slice(-1)[0]}{cut ? " ✂️" : ""}
+                      <span style={{ fontFamily:"monospace", color:inTop5?C.greenLight:C.muted }}>{fmt(s)}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── PLAYER SCORES ────────────────────────────────────────────────────────────
+function PlayerScores({ scores }) {
+  const all = BUCKETS.flatMap(b => b.players.map(p => ({ name:p, score:scores[p], bucket:b.id }))).sort((a,b)=>a.score-b.score);
+  return (
+    <div style={{ padding:16, maxWidth:600, margin:"0 auto" }}>
+      <h2 style={{ color:C.white, margin:"0 0 12px", fontSize:18 }}>Player Scores</h2>
+      <div style={{ background:C.blackCard, borderRadius:10, overflow:"hidden", border:`1px solid ${C.border}` }}>
+        <div style={{ display:"grid", gridTemplateColumns:"32px 1fr 40px 52px", gap:8, padding:"8px 12px", background:C.black, color:C.muted, fontSize:11, fontWeight:700, textTransform:"uppercase" }}>
+          <span>Pos</span><span>Player</span><span>Bkt</span><span style={{ textAlign:"right" }}>Score</span>
+        </div>
+        {all.map((p,i) => (
+          <div key={p.name} style={{ display:"grid", gridTemplateColumns:"32px 1fr 40px 52px", gap:8, padding:"8px 12px", borderTop:`1px solid ${C.border}`, alignItems:"center" }}>
+            <span style={{ color:C.muted, fontSize:12, fontFamily:"monospace" }}>{i+1}</span>
+            <span style={{ color:C.offWhite, fontSize:13 }}>{amLabel(p.name)}</span>
+            <span style={{ color:C.muted, fontSize:11 }}>B{p.bucket}</span>
+            <span style={{ textAlign:"right" }}><ScoreBadge score={p.score} /></span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+// ─── OUR TEAM ────────────────────────────────────────────────────────────────
+const TEAM_PHOTOS = [
+  { src:"photos/team1.jpg", caption:"Kilkenny United FC Blitz — trophy day!" },
+  { src:"photos/team2.jpg", caption:"Night match vs Drogheda United FC" },
+  { src:"photos/team3.jpg", caption:"Full squad at Drogheda United FC — coaches and all" },
+  { src:"photos/team4.jpg", caption:"Ready for action at Drogheda United FC" },
+];
+
+function OurTeam() {
+  const [activePhoto, setActivePhoto] = useState(0);
+  const photos = TEAM_PHOTOS;
+  return (
+    <div style={{ padding:16, maxWidth:640, margin:"0 auto" }}>
+      <h2 style={{ color:C.white, margin:"0 0 4px", fontSize:18 }}>About the Team</h2>
+      <div style={{ color:C.muted, fontSize:12, marginBottom:16 }}>Swords Celtic FC · 2015 Girls · UK Trip 2026</div>
+
+      <div style={{ marginBottom:16 }}>
+        <img src={photos[activePhoto].src} alt={photos[activePhoto].caption}
+          style={{ width:"100%", borderRadius:12, border:`2px solid ${C.green}`, display:"block", maxHeight:320, objectFit:"cover" }} />
+        <div style={{ color:C.mutedLight, fontSize:12, textAlign:"center", marginTop:6, fontStyle:"italic" }}>
+          {photos[activePhoto].caption}
+        </div>
+        <div style={{ display:"flex", gap:6, marginTop:10, justifyContent:"center" }}>
+          {photos.map((_,i) => (
+            <button key={i} onClick={()=>setActivePhoto(i)} style={{
+              width:10, height:10, borderRadius:"50%", border:"none",
+              background: i===activePhoto ? C.green : C.border,
+              cursor:"pointer", padding:0, transition:"background 0.2s",
+            }} />
+          ))}
+        </div>
+        <div style={{ display:"flex", gap:6, marginTop:10, overflowX:"auto", paddingBottom:4 }}>
+          {photos.map((ph,i) => (
+            <img key={i} src={ph.src} alt={ph.caption} onClick={()=>setActivePhoto(i)}
+              style={{ width:70, height:52, objectFit:"cover", borderRadius:6, flexShrink:0,
+                border: i===activePhoto ? `2px solid ${C.green}` : `2px solid ${C.border}`,
+                cursor:"pointer", opacity: i===activePhoto ? 1 : 0.6, transition:"all 0.15s" }} />
+          ))}
+        </div>
+      </div>
+
+      <div style={{ background:C.blackCard, border:`1px solid ${C.border}`, borderRadius:12, padding:16 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
+          <img src="photos/club-crest.png" alt="Swords Celtic FC" style={{ width:42, height:42, borderRadius:"50%", flexShrink:0, display:"block" }} />
+          <div>
+            <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Swords Celtic FC</div>
+            <div style={{ color:C.green, fontSize:12 }}>2015 Girls · Est. 1962</div>
+          </div>
+        </div>
+        <p style={{ color:C.mutedLight, fontSize:13, lineHeight:1.8, margin:0 }}>
+          Swords Celtic FC girls section have two U11 squads (born 2015), both playing in the DDSL girls leagues. The girls section in Swords Celtic has seen unprecedented growth over recent years and is now one of the largest girls clubs in North County Dublin, offering football for girls from U8 to U16 as well as hosting FAI Girls Only Summer Camps each year.
+        </p>
+        <p style={{ color:C.mutedLight, fontSize:13, lineHeight:1.8, margin:"12px 0 0" }}>
+          Both 2015 squads love their football and their dedication has yielded real success. Both have been promoted to higher leagues (Premier and Division 5) for this season, and both have won blitzes hosted by Kilkenny United FC, Corduff FC and Parkvilla FC.
+        </p>
+        <div style={{ background:`${C.green}18`, border:`1px solid ${C.green}44`, borderRadius:8, padding:"10px 12px", marginTop:14 }}>
+          <div style={{ color:C.green, fontWeight:700, fontSize:13, marginBottom:4 }}>🌍 The UK Trip</div>
+          <p style={{ color:C.offWhite, fontSize:13, lineHeight:1.7, margin:0 }}>
+            Their trip to the UK will see them train at a top academy, play against local clubs and attend a WSL match — what promises to be a truly memorable adventure for these brilliant young players!
+          </p>
+        </div>
+        <div style={{ marginTop:14, display:"flex", gap:8, flexWrap:"wrap" }}>
+          {[["🏆","Blitz Winners"],["📈","Promoted Squads"],["⚽","DDSL Leagues"],["🏟️","WSL Match Trip"]].map(([icon,label])=>(
+            <span key={label} style={{ background:C.black, border:`1px solid ${C.border}`, borderRadius:6, padding:"4px 10px", fontSize:11, color:C.mutedLight, display:"flex", alignItems:"center", gap:4 }}>
+              {icon} {label}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CONTACT US ───────────────────────────────────────────────────────────────
+function ContactUs() {
+  const [status, setStatus]   = useState("idle"); // idle | sending | sent | error
+  const [name, setName]       = useState("");
+  const [email, setEmail]     = useState("");
+  const [message, setMessage] = useState("");
+  const [errMsg, setErrMsg]   = useState("");
+
+  const inputStyle = {
+    width:"100%", padding:"11px 13px", borderRadius:8,
+    background:C.black, border:`1px solid ${C.border}`,
+    color:C.white, fontSize:14, outline:"none", fontFamily:"inherit",
+  };
+
+  const handleSubmit = async () => {
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      setErrMsg("Please fill in all fields.");
+      setStatus("error");
+      return;
+    }
+    setStatus("sending");
+    setErrMsg("");
+    try {
+      const res = await fetch("https://formspree.io/f/mbdezbrv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+      if (res.ok) {
+        setStatus("sent");
+        setName(""); setEmail(""); setMessage("");
+      } else {
+        setErrMsg("Something went wrong sending your message. Please try again.");
+        setStatus("error");
+      }
+    } catch(e) {
+      setErrMsg("Network error — please check your connection and try again.");
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div style={{ padding:16, maxWidth:560, margin:"0 auto" }}>
+      <h2 style={{ color:C.white, margin:"0 0 4px", fontSize:18 }}>Contact Us</h2>
+      <div style={{ color:C.muted, fontSize:12, marginBottom:16 }}>Questions about the sweep? Send us a message below.</div>
+
+      {status === "sent" ? (
+        <div style={{ background:`${C.green}18`, border:`1px solid ${C.green}`, borderRadius:10, padding:"16px 14px", color:C.offWhite }}>
+          <div style={{ color:C.green, fontWeight:700, fontSize:14, marginBottom:4 }}>✅ Message sent!</div>
+          <div style={{ fontSize:13, lineHeight:1.6 }}>Thanks for getting in touch — we'll get back to you as soon as we can.</div>
+          <button onClick={()=>setStatus("idle")} style={{
+            marginTop:12, background:"none", border:`1px solid ${C.green}66`, color:C.green,
+            borderRadius:6, padding:"6px 12px", fontSize:12, cursor:"pointer", fontFamily:"inherit",
+          }}>Send another message</button>
+        </div>
+      ) : (
+        <div style={{ background:C.blackCard, border:`1px solid ${C.border}`, borderRadius:12, padding:16, display:"flex", flexDirection:"column", gap:12 }}>
+          <div>
+            <label style={{ display:"block", color:C.mutedLight, fontSize:12, marginBottom:5 }}>Your name</label>
+            <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Mary Murphy" style={inputStyle} />
+          </div>
+          <div>
+            <label style={{ display:"block", color:C.mutedLight, fontSize:12, marginBottom:5 }}>Your email</label>
+            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="so we can reply to you" style={inputStyle} />
+          </div>
+          <div>
+            <label style={{ display:"block", color:C.mutedLight, fontSize:12, marginBottom:5 }}>Your message</label>
+            <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={5} placeholder="How can we help?" style={{ ...inputStyle, resize:"vertical", lineHeight:1.5 }} />
+          </div>
+          {status === "error" && (
+            <div style={{ color:C.red, fontSize:13 }}>{errMsg}</div>
+          )}
+          <button onClick={handleSubmit} disabled={status==="sending"} style={{
+            background:C.green, color:C.white, border:"none", borderRadius:8,
+            padding:"12px 16px", fontSize:15, fontWeight:700, fontFamily:"inherit",
+            cursor: status==="sending" ? "default" : "pointer", opacity: status==="sending" ? 0.7 : 1,
+          }}>{status==="sending" ? "Sending…" : "Send Message"}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+function Admin({ entries, setEntries }) {
+  async function remove(id) {
+    await deleteEntry(id);
+    const fresh = await loadEntries();
+    setEntries(fresh);
+  }
+  async function clear() {
+    if(window.confirm("Delete ALL entries? This cannot be undone.")) {
+      await deleteAllEntries();
+      setEntries([]);
+    }
+  }
+  const byPerson = {};
+  entries.forEach(e => { if(!byPerson[e.personName]) byPerson[e.personName]={entries:[],contact:e.contact}; byPerson[e.personName].entries.push(e); });
+
+  function downloadCSV() {
+    const headers = [
+      "Name", "Email/Phone", "Team Name",
+      "Bucket 1", "Bucket 2", "Bucket 3", "Bucket 4", "Bucket 5",
+      "Bucket 6", "Bucket 7", "Bucket 8", "Bucket 9", "Bucket 10",
+      "Tiebreaker", "Submitted At"
+    ];
+    const rows = entries.map(e => [
+      e.personName,
+      e.contact,
+      e.teamName,
+      ...e.picks,
+      fmt(e.tiebreaker),
+      new Date(e.submittedAt).toLocaleString("en-IE")
+    ]);
+    const csv = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `SwordsCelticSweep_Entries_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <div style={{ padding:16, maxWidth:640, margin:"0 auto" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+        <h2 style={{ color:C.white, margin:0, fontSize:18 }}>⚙ Admin Panel</h2>
+        <div style={{ display:"flex", gap:8 }}>
+          {entries.length>0 && <button onClick={downloadCSV} style={{ background:C.greenDark, color:C.white, border:`1px solid ${C.green}`, borderRadius:6, padding:"6px 12px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>⬇ Download CSV</button>}
+          {entries.length>0 && <button onClick={clear} style={{ background:"#7f1d1d", color:"#fca5a5", border:"none", borderRadius:6, padding:"6px 12px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Clear All</button>}
+        </div>
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
+        <div style={{ background:C.blackCard, borderRadius:8, padding:12, border:`1px solid ${C.border}` }}>
+          <div style={{ color:C.mutedLight, fontSize:11, fontWeight:700, textTransform:"uppercase" }}>Total Entries</div>
+          <div style={{ color:C.green, fontSize:24, fontWeight:800 }}>{entries.length}</div>
+        </div>
+        <div style={{ background:C.blackCard, borderRadius:8, padding:12, border:`1px solid ${C.border}` }}>
+          <div style={{ color:C.mutedLight, fontSize:11, fontWeight:700, textTransform:"uppercase" }}>Prize Pool Est.</div>
+          <div style={{ color:C.green, fontSize:24, fontWeight:800 }}>€{entries.length*PRICE_SINGLE}</div>
+        </div>
+      </div>
+
+      {!entries.length ? (
+        <div style={{ color:C.muted, textAlign:"center", padding:40 }}>No entries yet.</div>
+      ) : (
+        Object.entries(byPerson).map(([name, data]) => (
+          <div key={name} style={{ marginBottom:16 }}>
+            <div style={{ color:C.green, fontWeight:700, fontSize:14, marginBottom:6 }}>{name} <span style={{ color:C.muted, fontSize:11, fontWeight:400 }}>· {data.contact}</span></div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {data.entries.map(e => (
+                <div key={e.id} style={{ background:C.blackCard, border:`1px solid ${C.border}`, borderRadius:8, padding:"10px 12px", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                      <span style={{ color:C.white, fontWeight:600, fontSize:13 }}>{e.teamName}</span>
+                      <span style={{ fontFamily:"monospace", color:C.amberLight, fontSize:11 }}>🏆 {fmt(e.tiebreaker)}</span>
+                    </div>
+                    <div style={{ color:C.muted, fontSize:10, marginBottom:5 }}>{new Date(e.submittedAt).toLocaleString()}</div>
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:3 }}>
+                      {e.picks.map((p,i) => <span key={i} style={{ background:C.black, borderRadius:4, padding:"1px 6px", fontSize:9, color:C.muted }}>{p.split(" ").slice(-1)[0]}</span>)}
+                    </div>
+                  </div>
+                  <button onClick={() => remove(e.id)} style={{ background:"none", border:`1px solid ${C.border}`, color:C.muted, borderRadius:4, padding:"4px 8px", cursor:"pointer", fontSize:11, fontFamily:"inherit", marginLeft:8 }}>Remove</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+
+      <div style={{ marginTop:20, background:C.blackCard, borderRadius:8, padding:14, fontSize:12, color:C.muted, border:`1px solid ${C.border}` }}>
+        <div style={{ fontWeight:700, color:C.mutedLight, marginBottom:8 }}>Prizes & Rules</div>
+        <ul style={{ margin:0, paddingLeft:16, lineHeight:2 }}>
+          <li>Select one player from each of 10 buckets (10 picks total)</li>
+          <li><strong style={{ color:C.offWhite }}>Rule 1:</strong> Pick one golfer from each of the 10 buckets</li>
+          <li><strong style={{ color:C.offWhite }}>Rule 2:</strong> Pay €10 per entry or €20 for three entries</li>
+          <li><strong style={{ color:C.offWhite }}>Rule 3:</strong> Winner = lowest aggregate score from best 5 of 10 picks</li>
+          <li><strong style={{ color:C.offWhite }}>Rule 4:</strong> Ties decided by closest tiebreaker guess to the winning score vs par</li>
+          <li><strong style={{ color:C.offWhite }}>Rule 5:</strong> Players missing the cut receive the last-placed finisher's score for Sat & Sun</li>
+          <li>€{PRICE_SINGLE} per entry · 3 entries for €{PRICE_BUNDLE}</li>
+          <li>1st: €100 · 2nd: €50 · 3rd: €25</li>
+          <li>⏰ Deadline: 11am Dublin Time, Thu 18 June 2026</li>
+          <li>US Open @ Shinnecock Hills, Jun 18–21 2026</li>
+          <li>Revolut: <strong style={{ color:C.purpleLight }}>@{REVOLUT_ME}</strong></li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ─── ADMIN LOGIN ──────────────────────────────────────────────────────────────
+function AdminLogin({ onSuccess }) {
+  const [pin, setPin] = useState("");
+  const [err, setErr] = useState(false);
+  function attempt() { if(pin===ADMIN_PIN) onSuccess(); else { setErr(true); setPin(""); } }
+  return (
+    <div style={{ padding:40, maxWidth:320, margin:"0 auto", textAlign:"center" }}>
+      <div style={{ fontSize:36, marginBottom:12 }}>🔐</div>
+      <h3 style={{ color:C.white, marginBottom:16 }}>Admin Access</h3>
+      <input type="password" value={pin} onChange={e=>{setPin(e.target.value);setErr(false);}} onKeyDown={e=>e.key==="Enter"&&attempt()} placeholder="Enter PIN"
+        style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:err?`1px solid ${C.red}`:`1px solid ${C.border}`, background:C.blackCard, color:C.white, fontSize:16, boxSizing:"border-box", fontFamily:"inherit", textAlign:"center", letterSpacing:"0.2em", outline:"none", marginBottom:8 }} />
+      {err && <div style={{ color:"#f87171", fontSize:12, marginBottom:8 }}>Incorrect PIN</div>}
+      <button onClick={attempt} style={{ background:C.green, color:C.white, border:"none", borderRadius:8, padding:"10px 24px", fontWeight:700, cursor:"pointer", fontFamily:"inherit", width:"100%" }}>Unlock</button>
+    </div>
+  );
+}
+
+// ─── ROOT ─────────────────────────────────────────────────────────────────────
+function App() {
+  const [view, setView]               = useState("enter");
+  const [entries, setEntries]         = useState([]);
+  const [scores, setScores]           = useState({});
+  const [isAdmin, setIsAdmin]         = useState(false);
+  const [adminLoginOpen, setALO]      = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [loading, setLoading]         = useState(true);
+
+  useEffect(() => {
+    loadEntries().then(e => { setEntries(e); setLoading(false); });
+    // Refresh entries every 30s so leaderboard stays live for all viewers
+    const iv = setInterval(() => {
+      loadEntries().then(e => setEntries(e));
+    }, 30000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const [scoreSource, setScoreSource] = useState("mock");
+  const [currentRound, setCurrentRound] = useState(null);
+
+  const refreshScores = useCallback(async () => {
+    const live = await fetchLiveScores();
+    if (live) {
+      // Auto-apply the cut: add any newly-cut or withdrawn players to missedCut.
+      // (We only add, never clear, so manual admin additions are preserved.)
+      (live.cut || []).forEach(name => missedCut.add(name));
+      (live.withdrawn || []).forEach(name => missedCut.add(name));
+      setScores(live.scores);
+      setScoreSource(live.source);
+      setCurrentRound(live.round || null);
+    } else {
+      setScores(generateMockScores());
+      setScoreSource("mock");
+    }
+    setLastUpdated(new Date());
+  }, []);
+  useEffect(() => { refreshScores(); const iv=setInterval(refreshScores,120000); return ()=>clearInterval(iv); }, [refreshScores]);
+
+  function go(id) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if(id==="admin"&&!isAdmin){ setALO(true); }
+    else { setALO(false); setView(id); }
+  }
+
+  return (
+    <div style={{ minHeight:"100vh", background:C.black, fontFamily:"'Georgia', serif", color:C.offWhite }}>
+      {/* ── HEADER ── */}
+      <header style={{ background:`linear-gradient(135deg, ${C.black} 0%, #0d1f12 100%)`, borderBottom:`2px solid ${C.green}`, padding:"16px 16px 12px" }}>
+        <div style={{ maxWidth:640, margin:"0 auto" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+              <img src="photos/club-crest.png" alt="Swords Celtic FC" style={{ width:54, height:54, borderRadius:"50%", flexShrink:0, display:"block" }} />
+              <div>
+                <h1 style={{ margin:0, fontSize:18, fontWeight:800, color:C.white, lineHeight:1.1 }}>Swords Celtic FC</h1>
+                <div style={{ color:C.green, fontSize:12, fontWeight:600, marginTop:1 }}>2015 Girls · UK Trip Fundraiser</div>
+              </div>
+            </div>
+            <div style={{ textAlign:"right" }}>
+              {!isAdmin
+                ? <button onClick={()=>setALO(true)} style={{ background:"none", border:`1px solid ${C.border}`, color:C.muted, borderRadius:6, padding:"4px 10px", fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>Admin</button>
+                : <button onClick={()=>{setIsAdmin(false);setView("enter");}} style={{ background:"none", border:`1px solid ${C.green}44`, color:C.green, borderRadius:6, padding:"4px 10px", fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>Admin ✓</button>
+              }
+              {lastUpdated && (
+              <div style={{ color:C.border, fontSize:10, marginTop:2 }}>
+                {scoreSource==="live"
+                  ? <span style={{ color:C.greenLight }}>🟢 Live{currentRound ? ` · R${currentRound}` : ""} · {lastUpdated.toLocaleTimeString()}</span>
+                  : <span style={{ color:"#555" }}>⚪ Demo scores · {lastUpdated.toLocaleTimeString()}</span>
+                }
+              </div>
+            )}
+            </div>
+          </div>
+          <div style={{ marginTop:10, background:`${C.green}18`, border:`1px solid ${C.green}33`, borderRadius:8, padding:"7px 12px", fontSize:12, color:C.offWhite, lineHeight:1.5 }}>
+            ⛳ <strong>US Open Golf Sweep 2026</strong> — Pick your players, follow the action live at Shinnecock Hills (Jun 18–21), and help send the 2015 girls on their UK adventure!
+          </div>
+          <div style={{ marginTop:6, fontSize:11, color:C.muted }}>⛳ Shinnecock Hills · Jun 18–21 · €{PRICE_SINGLE}/entry · 3 for €{PRICE_BUNDLE} · @{REVOLUT_ME}</div>
+        </div>
+      </header>
+
+      <Nav view={adminLoginOpen?"admin":view} setView={go} isAdmin={isAdmin} />
+
+      {loading
+        ? <div style={{ padding:60, textAlign:"center", color:C.muted }}>Loading…</div>
+        : adminLoginOpen
+          ? <AdminLogin onSuccess={()=>{setIsAdmin(true);setALO(false);setView("admin");}} />
+          : <>
+              {view==="enter"       && <EnterPicks entries={entries} setEntries={setEntries} scores={scores} />}
+              {view==="leaderboard" && <Leaderboard entries={entries} scores={scores} />}
+              {view==="players"     && <PlayerScores scores={scores} />}
+              {view==="ourteam"     && <OurTeam />}
+              {view==="contact"     && <ContactUs />}
+              {view==="admin"&&isAdmin && <Admin entries={entries} setEntries={setEntries} />}
+            </>
+      }
+    </div>
+  );
+}
+
+  </script>
+</body>
+</html>
