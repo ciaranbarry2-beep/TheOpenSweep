@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Swords Celtic Sweep 2026</title>
+  <title>The Open Sweep 2026 · Swords Celtic</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0a0a0a; font-family: Georgia, serif; color: #fff; }
+    body { background: #0d0b0a; font-family: Georgia, serif; color: #f4ead6; }
     input, button, select, textarea { font-family: Georgia, serif; }
-    #loading { padding:60px; text-align:center; color:#119647; font-size:16px; }
+    #loading { padding:60px; text-align:center; color:#8f1d2e; font-size:16px; }
   </style>
 </head>
 <body>
-  <div id="root"><div id="loading">⛳ Loading Swords Celtic Sweep 2026...<br><br><small style="color:#555">Please wait — loading resources</small></div></div>
+  <div id="root"><div id="loading">⛳ Loading The Open Sweep 2026...<br><br><small style="color:#555">Please wait — loading resources</small></div></div>
 
   <script>
   // Load scripts sequentially to avoid race conditions
@@ -70,28 +70,36 @@ const missedCut = new Set([
 
 // ─── SWORDS CELTIC COLOURS (green + black) ────────────────────────────────────
 const C = {
-  green:      "#119647",
-  greenDark:  "#0a6b30",
-  greenDeep:  "#083d1c",
-  greenLight: "#3dc978",
-  greenGlow:  "#11964733",
-  black:      "#0a0a0a",
-  blackMid:   "#111111",
-  blackCard:  "#181818",
-  blackLight: "#222222",
-  border:     "#2a2a2a",
-  borderGreen:"#11964755",
-  muted:      "#555555",
-  mutedLight: "#888888",
+  // ── HERO = The Open claret (keys kept as "green*" so all existing references repoint automatically) ──
+  green:      "#8f1d2e",   // claret — primary accent / buttons / active tabs
+  greenDark:  "#6e1423",   // claret deep — pressed / darker fills
+  greenDeep:  "#4a0d18",   // claret deepest — banners / panels
+  greenLight: "#c77785",   // claret light — highlights / secondary text on claret
+  greenGlow:  "#8f1d2e33", // claret glow (low-alpha)
+  // ── BASE = links basalt (warmed toward sand/peat) ──
+  black:      "#0d0b0a",
+  blackMid:   "#141110",
+  blackCard:  "#1a1714",
+  blackLight: "#2a2419",
+  border:     "#3a342c",
+  borderGreen:"#8f1d2e55", // claret-tinted border
+  muted:      "#6b6354",
+  mutedLight: "#9a8f7d",
   white:      "#ffffff",
-  offWhite:   "#e8f5ee",
-  amber:      "#f59e0b",
-  amberLight: "#fcd34d",
-  gold:       "#FFD700",
+  offWhite:   "#f4ead6",   // parchment — warm headings / body
+  // ── Swords Celtic accent (the 20%) — real emerald, now used for success/live/good scores ──
+  amber:      "#119647",   // (repurposed) Celtic green — confirmations / success
+  amberLight: "#3dc978",   // (repurposed) Celtic green light — live / under-par scores
+  celtic:     "#119647",   // explicit alias for clarity
+  celticLight:"#3dc978",
+  celticDark: "#0a6b30",
+  // ── Podium ──
+  gold:       "#cda349",   // warm Claret Jug gold — 1st place
   silver:     "#C0C0C0",
   bronze:     "#CD7F32",
-  purple:     "#7c3aed",
-  purpleLight:"#c4b5fd",
+  // ── Payment panel = claret (recoloured from purple) ──
+  purple:     "#8f1d2e",   // (repurposed) claret — payment accents
+  purpleLight:"#c77785",   // (repurposed) claret light
   red:        "#dc2626",
 };
 
@@ -335,7 +343,7 @@ function PrizesPanel() {
           { n:"1", text:"Pick one golfer from each of the ten buckets (see next page)." },
           { n:"2", text:"Pay your entry fee — €10 for one selection or €20 for three." },
           { n:"3", text:"The winner has the lowest aggregate score from their best 5 of 10 players." },
-          { n:"4", text:"Ties are broken by the closest tiebreaker prediction to the actual US Open winning score." },
+          { n:"4", text:"Ties are broken by the closest tiebreaker prediction to the actual Open Championship winning score." },
           { n:"5", text:"If a player does not start (DNS) the tournament due to injury, illness or any other reason, all participants who selected that player will have them replaced by a randomly assigned alternate from the same bucket. This replacement will be applied uniformly." },
           { n:"6", text:"Players missing the cut are assigned the last-placed finisher's score for Saturday and Sunday." },
           { n:"7", text:"If a player withdraws (WD) from the tournament after teeing off, that is considered part of the game. No replacement is made — the player's score at the point of withdrawal carries forward using the missed-cut rule (Rule 6)." },
@@ -382,7 +390,7 @@ function TiebreakerInput({ value, onChange }) {
         {value!==null && <GreenPill>✓ {fmt(value)}</GreenPill>}
       </div>
       <div style={{ padding:12 }}>
-        <p style={{ color:C.muted, fontSize:12, margin:"0 0 10px" }}>What will the winning score be vs par at Shinnecock Hills?</p>
+        <p style={{ color:C.muted, fontSize:12, margin:"0 0 10px" }}>What will the winning score be vs par at Royal Birkdale?</p>
         <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
           {SCORE_OPTIONS.map(s => (
             <button key={s} onClick={() => onChange(s)} style={{
@@ -458,41 +466,41 @@ function BucketSelector({ picks, onPick }) {
 function RevolutPayCard({ name, totalEntries }) {
   const isBundle = totalEntries >= 3;
   const amount   = isBundle ? PRICE_BUNDLE : totalEntries * PRICE_SINGLE;
-  const ref      = `USOpen2026-${name.replace(/\s+/g,"")}`;
+  const ref      = `TheOpen2026-${name.replace(/\s+/g,"")}`;
   return (
-    <div style={{ background:"linear-gradient(135deg,#1a0533,#0d1b3e)", border:`1px solid ${C.purple}55`, borderRadius:12, padding:16 }}>
+    <div style={{ background:"linear-gradient(135deg,#2a0a10,#1a0708)", border:`1px solid ${C.purple}55`, borderRadius:12, padding:16 }}>
       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-        <span style={{ fontSize:20 }}>💜</span>
+        <span style={{ fontSize:20 }}>🏆</span>
         <span style={{ color:C.purpleLight, fontWeight:700, fontSize:15 }}>Pay via Revolut</span>
       </div>
-      <div style={{ background:"#0f0520", borderRadius:8, padding:12, marginBottom:12 }}>
+      <div style={{ background:"#1a0708", borderRadius:8, padding:12, marginBottom:12 }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-          <span style={{ color:"#7c3aed", fontSize:12 }}>{totalEntries} × entry</span>
+          <span style={{ color:"#c77785", fontSize:12 }}>{totalEntries} × entry</span>
           <span style={{ color:C.offWhite, fontSize:12 }}>€{totalEntries*PRICE_SINGLE}</span>
         </div>
         {isBundle && (
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-            <span style={{ color:"#7c3aed", fontSize:12 }}>3-entry bundle discount</span>
+            <span style={{ color:"#c77785", fontSize:12 }}>3-entry bundle discount</span>
             <span style={{ color:"#4ade80", fontSize:12 }}>–€{PRICE_SINGLE*3-PRICE_BUNDLE}</span>
           </div>
         )}
-        <div style={{ display:"flex", justifyContent:"space-between", borderTop:"1px solid #1e1040", paddingTop:8, marginTop:4 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", borderTop:"1px solid #4a0d18", paddingTop:8, marginTop:4 }}>
           <span style={{ color:C.purpleLight, fontWeight:700, fontSize:14 }}>Total due</span>
           <span style={{ color:C.amber, fontWeight:800, fontSize:20 }}>€{amount}</span>
         </div>
       </div>
-      <div style={{ background:"#1e0040", borderRadius:6, padding:"8px 10px", marginBottom:12, fontSize:11 }}>
-        <span style={{ color:"#7c3aed" }}>Reference: </span>
+      <div style={{ background:"#2a0a10", borderRadius:6, padding:"8px 10px", marginBottom:12, fontSize:11 }}>
+        <span style={{ color:"#c77785" }}>Reference: </span>
         <strong style={{ color:C.purpleLight }}>{ref}</strong>
-        <div style={{ color:"#4c1d95", fontSize:10, marginTop:2 }}>Include this so we can match your payment ✓</div>
+        <div style={{ color:"#9a6e74", fontSize:10, marginTop:2 }}>Include this so we can match your payment ✓</div>
       </div>
       <div style={{ textAlign:"center", marginBottom:12 }}>
-        <div style={{ color:"#7c3aed", fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:8 }}>Scan to Pay</div>
-        <img src="photos/revolut-qr.jpg" alt="Revolut QR Code" style={{ width:180, height:180, borderRadius:12, display:"block", margin:"0 auto", border:"2px solid #7c3aed44" }} />
-        <div style={{ color:"#4c1d95", fontSize:10, marginTop:6 }}>Point your phone camera at the QR code to pay instantly</div>
+        <div style={{ color:"#c77785", fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:8 }}>Scan to Pay</div>
+        <img src="photos/revolut-qr.jpg" alt="Revolut QR Code" style={{ width:180, height:180, borderRadius:12, display:"block", margin:"0 auto", border:"2px solid #8f1d2e44" }} />
+        <div style={{ color:"#9a6e74", fontSize:10, marginTop:6 }}>Point your phone camera at the QR code to pay instantly</div>
       </div>
       <a href={`https://revolut.me/${REVOLUT_ME}`} target="_blank" rel="noopener noreferrer"
-        style={{ display:"block", textAlign:"center", background:"linear-gradient(135deg,#7c3aed,#6d28d9)", color:C.white, borderRadius:8, padding:"12px 0", fontWeight:700, fontSize:14, textDecoration:"none" }}>
+        style={{ display:"block", textAlign:"center", background:"linear-gradient(135deg,#8f1d2e,#6e1423)", color:C.white, borderRadius:8, padding:"12px 0", fontWeight:700, fontSize:14, textDecoration:"none" }}>
         Open Revolut → @{REVOLUT_ME}
       </a>
     </div>
@@ -701,12 +709,12 @@ function EnterPicks({ entries, setEntries, scores }) {
         )}
 
         <div style={{ marginBottom:12 }}>
-          <div style={{ color:"#FFD700", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>⭐ Team Name *</div>
+          <div style={{ color:"#cda349", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>🏆 Team Name *</div>
           <input value={currentTeamName} onChange={e=>setCurrentTeamName(e.target.value)} placeholder={`e.g. "The Lucky Shamrocks"`}
-            style={{ width:"100%", padding:"11px 13px", borderRadius:8, border:"2px solid #FFD700",
-              background:"#1a1a00", color:C.white, fontSize:14, boxSizing:"border-box",
-              fontFamily:"inherit", outline:"none", boxShadow:"0 0 10px #FFD70033" }} />
-          <div style={{ color:"#a08800", fontSize:11, marginTop:4 }}>This name appears on the leaderboard — make it count!</div>
+            style={{ width:"100%", padding:"11px 13px", borderRadius:8, border:"2px solid #cda349",
+              background:"#1f1808", color:C.white, fontSize:14, boxSizing:"border-box",
+              fontFamily:"inherit", outline:"none", boxShadow:"0 0 10px #cda34933" }} />
+          <div style={{ color:"#9a8255", fontSize:11, marginTop:4 }}>This name appears on the leaderboard — make it count!</div>
         </div>
 
         <BucketSelector picks={currentPicks} onPick={(bid, p) => setCurrentPicks(prev=>({...prev,[bid]:p}))} />
@@ -1185,7 +1193,7 @@ function Admin({ entries, setEntries }) {
           <li>€{PRICE_SINGLE} per entry · 3 entries for €{PRICE_BUNDLE}</li>
           <li>1st: €100 · 2nd: €50 · 3rd: €25</li>
           <li>⏰ Deadline: 11am Dublin Time, Thu 18 June 2026</li>
-          <li>US Open @ Shinnecock Hills, Jun 18–21 2026</li>
+          <li>The Open @ Royal Birkdale, Jul 16–19 2026</li>
           <li>Revolut: <strong style={{ color:C.purpleLight }}>@{REVOLUT_ME}</strong></li>
         </ul>
       </div>
@@ -1285,9 +1293,9 @@ function App() {
             </div>
           </div>
           <div style={{ marginTop:10, background:`${C.green}18`, border:`1px solid ${C.green}33`, borderRadius:8, padding:"7px 12px", fontSize:12, color:C.offWhite, lineHeight:1.5 }}>
-            ⛳ <strong>US Open Golf Sweep 2026</strong> — Pick your players, follow the action live at Shinnecock Hills (Jun 18–21), and help send the 2015 girls on their UK adventure!
+            ⛳ <strong>The Open Golf Sweep 2026</strong> — Pick your players, follow the action live at Royal Birkdale (Jul 16–19), and help send the 2015 girls on their UK adventure!
           </div>
-          <div style={{ marginTop:6, fontSize:11, color:C.muted }}>⛳ Shinnecock Hills · Jun 18–21 · €{PRICE_SINGLE}/entry · 3 for €{PRICE_BUNDLE} · @{REVOLUT_ME}</div>
+          <div style={{ marginTop:6, fontSize:11, color:C.muted }}>⛳ Royal Birkdale · Jul 16–19 · €{PRICE_SINGLE}/entry · 3 for €{PRICE_BUNDLE} · @{REVOLUT_ME}</div>
         </div>
       </header>
 
