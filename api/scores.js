@@ -1,12 +1,13 @@
 // /api/scores.js — Vercel serverless function
-// Fetches the live US Open leaderboard from ESPN's public golf API
+// Fetches the live Open Championship leaderboard from ESPN's public golf API
 // and returns it in the sweep app's { name: toParScore } format.
 // Called every ~2 minutes by the sweep app during the tournament.
 
-// 2026 US Open event ID (verify on ESPN before the tournament — see note below).
+// 2026 Open Championship (Royal Birkdale) event ID.
+// Verified via ESPN: espn.com/golf/leaderboard?tournamentId=401811957
 // If this ID is wrong or returns no players, we automatically fall back to
-// whatever PGA event ESPN currently lists, which during US Open week is the US Open.
-const US_OPEN_EVENT_ID = "401811952";
+// whatever PGA event ESPN currently lists, which during Open week is The Open.
+const OPEN_EVENT_ID = "401811957";
 
 const ESPN_BASE =
   "https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga";
@@ -32,7 +33,7 @@ export default async function handler(req, res) {
 
   try {
     // 1) Try the specific event ID first.
-    let data = await fetchLeaderboard(`${ESPN_BASE}&event=${US_OPEN_EVENT_ID}`);
+    let data = await fetchLeaderboard(`${ESPN_BASE}&event=${OPEN_EVENT_ID}`);
     let parsed = getCompetition(data);
     let usedFallback = false;
 
@@ -134,7 +135,7 @@ export default async function handler(req, res) {
       usedFallback, // true if we matched via current-event fallback rather than the hardcoded ID
     });
   } catch (error) {
-    // Return empty so the app falls back to mock scores gracefully.
+    // Return empty so the app falls back to par scores gracefully.
     return res.status(200).json({
       scores: {},
       source: "error",
