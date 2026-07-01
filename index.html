@@ -107,30 +107,30 @@ const C = {
 // ─── 100 PLAYERS IN 10 BUCKETS OF 10 ─────────────────────────────────────────
 const BUCKETS = [
   { id:1,  label:"Bucket 1",  tier:"Elite Favourites",
-    players:["Scottie Scheffler","Rory McIlroy","Jon Rahm","Xander Schauffele","Cameron Young","Tommy Fleetwood","Bryson DeChambeau","Ludvig Åberg","Viktor Hovland","Russell Henley"] },
+    players:["Scottie Scheffler","Rory McIlroy","Cameron Young","Matt Fitzpatrick","Russell Henley","Justin Rose","Tommy Fleetwood","Wyndham Clark","Collin Morikawa","Jon Rahm","Xander Schauffele"] },
   { id:2,  label:"Bucket 2",  tier:"Top Contenders",
-    players:["Collin Morikawa","Justin Thomas","Shane Lowry","Hideki Matsuyama","Tyrrell Hatton","Patrick Cantlay","Sam Burns","Ben Griffin","Robert MacIntyre","Justin Rose"] },
+    players:["J.J. Spaun","Chris Gotterup","Ludvig Åberg","Sam Burns","Aaron Rai","Justin Thomas","Ben Griffin","Robert MacIntyre","Tyrrell Hatton","Si Woo Kim","Sepp Straka"] },
   { id:3,  label:"Bucket 3",  tier:"Strong Challengers",
-    players:["Matt Fitzpatrick","Brooks Koepka","Keegan Bradley","J.J. Spaun","Sepp Straka","Aaron Rai","Maverick McNealy","Corey Conners","Chris Gotterup","Akshay Bhatia"] },
-  { id:4,  label:"Bucket 4",  tier:"Dark Horses",
-    players:["Harris English","Sungjae Im","Min Woo Lee","Jacob Bridgeman","Nick Taylor","Andrew Novak","Si Woo Kim","Kurt Kitayama","Nicolai Højgaard","Patrick Reed"] },
+    players:["Harris English","Jacob Bridgeman","Hideki Matsuyama","Viktor Hovland","Akshay Bhatia","J.T. Poston","Kurt Kitayama","Bryson DeChambeau","Nicolai Højgaard","Maverick McNealy","Alex Noren"] },
+  { id:4,  label:"Bucket 4",  tier:"In-Form Names",
+    players:["Patrick Cantlay","Keegan Bradley","Min Woo Lee","Bud Cauley","Gary Woodland","Rickie Fowler","Shane Lowry","Jason Day","Jordan Spieth","Daniel Berger","Michael Kim"] },
   { id:5,  label:"Bucket 5",  tier:"Mid-Range Picks",
-    players:["Joaquín Niemann","Alex Noren","Harry Hall","Ryan Gerard","Rickie Fowler","Jake Knapp","Jason Day","Daniel Berger","Michael Kim","Gary Woodland"] },
+    players:["Adam Scott","Nico Echavarria","Ryan Fox","Corey Conners","Matt McCarty","Pierceson Coody","Brian Harman","David Puig","Joaquín Niemann","Ryo Hisatsune","Tom Kim"] },
   { id:6,  label:"Bucket 6",  tier:"Value Plays",
-    players:["Adam Scott","Jordan Spieth","Alex Smalley","Marco Penge","Matt McCarty","Nico Echavarria","Sam Stevens","Ryan Fox","Brian Harman","Pierceson Coody"] },
-  { id:7,  label:"Bucket 7",  tier:"Sleeper Picks",
-    players:["David Puig","Ryo Hisatsune","Michael Brennan","Kristoffer Reitan","Sahith Theegala","Patrick Rodgers","Alex Fitzpatrick","Matti Schmid","Lucas Herbert","Keith Mitchell"] },
+    players:["Nick Taylor","Alex Fitzpatrick","Sami Välimäki","Harry Hall","Thomas Detry","Sahith Theegala","Aldrich Potgieter","Johnny Keefer","Jordan Smith","Sungjae Im","Cameron Smith"] },
+  { id:7,  label:"Bucket 7",  tier:"Past Champions & Sleepers",
+    players:["Rasmus Højgaard","Matt Wallace","Shaun Norris","Lucas Herbert","Haotong Li","Louis Oosthuizen","Stewart Cink","Darren Clarke","Francesco Molinari","Henrik Stenson","Tom McKibbin"] },
   { id:8,  label:"Bucket 8",  tier:"Long Shots",
-    players:["Davis Thompson","Taylor Montgomery","Billy Horschel","Tom Kim","Chris Kirk","Emiliano Grillo","Max Greyserman","Andrew Putnam","Nick Hardy","Caleb Surratt"] },
+    players:["Laurie Canter","Daniel Brown","Andy Sullivan","Jorge Campillo","Thorbjørn Olesen","Keita Nakajima","Matti Schmid","John Parry","Adrien Saddier","Angel Ayora","Brooks Koepka"] },
   { id:9,  label:"Bucket 9",  tier:"Big Outsiders",
-    players:["Peter Uihlein","Graeme McDowell","J.B. Holmes","Padraig Harrington","Zac Blair","Matthew Jordan","Niklas Nørgaard","Angel Hidalgo","Carl Yuan","Dylan Wu"] },
+    players:["Matthew Jordan","Daniel Hillier","Jacob Skov Olesen","Rasmus Neergaard-Petersen","Jesper Svensson","Padraig Harrington","Kazuki Higa","Elvis Smylie","David Duval","Peter Uihlein","Sergio García"] },
   { id:10, label:"Bucket 10", tier:"Qualifiers & Amateurs",
-    players:["Johnny Keefer","Brandon Wu","Cole Hammer","Neal Shipley","Ben Silverman","Jackson Koivun","Mason Howell","Miles Russell","Ethan Fang","Preston Stout"] },
+    players:["James Nicholas","Caleb Surratt","Matthew Baldwin","Jack McDonald","Tom Sloman","Austen Truslow","Stuart Grehan","David Howard","Mason Howell","Josele Ballester","Jackson Koivun"] },
 ];
 
 // Amateur players — names match ESPN exactly (no "(a)" suffix, which would break
 // score lookups). The "(a)" tag is appended at render time via amLabel() instead.
-const AMATEURS = new Set(["Jackson Koivun","Mason Howell","Miles Russell","Ethan Fang","Preston Stout"]);
+const AMATEURS = new Set(["Stuart Grehan","David Howard","Mason Howell","Josele Ballester"]);
 const amLabel = (p) => AMATEURS.has(p) ? p + " (a)" : p;
 
 const SCORE_OPTIONS = Array.from({ length: 31 }, (_, i) => i - 25);
