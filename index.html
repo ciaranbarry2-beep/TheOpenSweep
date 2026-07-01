@@ -152,6 +152,14 @@ function generateMockScores() {
   return s;
 }
 
+// Every player level par (E) — used before live scoring begins, so users don't
+// see confusing random numbers on their picks before the tournament starts.
+function generateParScores() {
+  const s = {};
+  BUCKETS.forEach(b => b.players.forEach(p => { s[p] = 0; }));
+  return s;
+}
+
 // ─── LIVE SCORES — fetched from /api/scores serverless function ───────────────
 async function fetchLiveScores() {
   try {
@@ -1256,7 +1264,7 @@ function App() {
     return () => clearInterval(iv);
   }, []);
 
-  const [scoreSource, setScoreSource] = useState("mock");
+  const [scoreSource, setScoreSource] = useState("par");
   const [currentRound, setCurrentRound] = useState(null);
 
   const refreshScores = useCallback(async () => {
@@ -1270,8 +1278,8 @@ function App() {
       setScoreSource(live.source);
       setCurrentRound(live.round || null);
     } else {
-      setScores(generateMockScores());
-      setScoreSource("mock");
+      setScores(generateParScores());
+      setScoreSource("par");
     }
     setLastUpdated(new Date());
   }, []);
@@ -1305,7 +1313,7 @@ function App() {
               <div style={{ color:C.border, fontSize:10, marginTop:2 }}>
                 {scoreSource==="live"
                   ? <span style={{ color:C.greenLight }}>🟢 Live{currentRound ? ` · R${currentRound}` : ""} · {lastUpdated.toLocaleTimeString()}</span>
-                  : <span style={{ color:"#555" }}>⚪ Demo scores · {lastUpdated.toLocaleTimeString()}</span>
+                  : <span style={{ color:C.muted }}>⚪ Not started · all players at par · {lastUpdated.toLocaleTimeString()}</span>
                 }
               </div>
             )}
